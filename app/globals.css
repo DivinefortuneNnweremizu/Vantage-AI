@@ -1,0 +1,105 @@
+@import "tailwindcss";
+@import "../tokens/design-tokens.css";
+
+/*
+  Base styles from design.md (Typography).
+  Colors come from the role variables, so they follow the active theme.
+*/
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      color-scheme: dark;
+    }
+  }
+
+  body {
+    background-color: var(--background-color);
+    color: var(--text-primary-color);
+    font-family: var(--font-sans);
+    letter-spacing: var(--tracking-body);
+    font-feature-settings: "cv03" 1, "cv04" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  /* Alternate glyph set for headings, stat values, labels, and names. */
+  .cv01 {
+    font-feature-settings: "cv01" 1, "cv03" 1, "cv04" 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+  Analysis loader (the concentric rings shown while a report is being written).
+  Colors come from the theme tokens. Reduced-motion users get static rings.
+*/
+@keyframes vantage-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes vantage-breathe {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes vantage-scan {
+  0%,
+  100% {
+    transform: translateX(-30%);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateX(30%);
+    opacity: 0.9;
+  }
+}
+
+.loader-orbit {
+  animation: vantage-orbit 5s linear infinite;
+}
+
+.loader-orbit-slow {
+  animation: vantage-orbit 9s linear infinite reverse;
+}
+
+.loader-core {
+  animation: vantage-breathe 2.4s ease-in-out infinite;
+}
+
+.loader-scan {
+  animation: vantage-scan 2.8s ease-in-out infinite;
+}

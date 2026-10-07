@@ -1,0 +1,302 @@
+// Vantage AI database schema.
+//
+// Migrations follow docs/implementation-plan.md, one reviewed change at a time
+// (.agents/skills/db-migration-runner/skill.md):
+//   1. init_users_sessions_assets
+//   2. add_analyses_and_report
+//   3. add_assistant_messages
+// Figma, AI request log, and payment models arrive in later phases.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  directUrl         = env("DIRECT_URL")
+  // Only read by "prisma migrate dev". The local dev database needs an explicit one.
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  VANTAGE_PRO
+}
+
+enum SubscriptionStatus {
+  FREE
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+enum PageScope {
+  SINGLE_PAGE
+  JOURNEY
+}
+
+enum Platform {
+  APP
+  WEB
+}
+
+enum AssetKind {
+  IMAGE
+  PDF_PAGE
+  FIGMA_FRAME
+  URL_CAPTURE
+}
+
+enum AnalysisStatus {
+  QUEUED
+  RUNNING
+  COMPLETE
+  FAILED
+}
+
+enum TakeawayKind {
+  STRENGTH
+  PAIN_POINT
+}
+
+enum Valence {
+  LIKE
+  DISLIKE
+}
+
+enum Severity {
+  CRITICAL
+  MAJOR
+  MINOR
+  STRENGTH
+}
+
+enum Confidence {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum IterationStatus {
+  NEW
+  PERSISTING
+  RESOLVED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+/// Profile mirror of Supabase auth.users. The id equals the auth user id.
+model User {
+  id           String          @id @db.Uuid
+  email        String          @unique
+  fullName     String?
+  avatarUrl    String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  subscription Subscription?
+  sessions     DesignSession[]
+}
+
+model Subscription {
+  id                    String             @id @default(uuid()) @db.Uuid
+  userId                String             @unique @db.Uuid
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                  Plan               @default(FREE)
+  status                SubscriptionStatus @default(FREE)
+  flutterwaveCustomerId String?
+  currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean            @default(false)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+}
+
+/// One design being critiqued. Shown in the Design Library and Previous Sessions.
+/// Named DesignSession so it is never confused with a Supabase auth session.
+model DesignSession {
+  id               String             @id @default(uuid()) @db.Uuid
+  userId           String             @db.Uuid
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title            String
+  pageScope        PageScope
+  platform         Platform
+  goal             String?
+  /// The asset shown as the card image in the Design Library.
+  coverAssetId     String?            @db.Uuid
+  /// The newest COMPLETE analysis. Null while the session is still a draft.
+  latestAnalysisId String?            @unique @db.Uuid
+  latestAnalysis   Analysis?          @relation("LatestAnalysis", fields: [latestAnalysisId], references: [id])
+  assets           Asset[]
+  messages         AssistantMessage[]
+  analyses         Analysis[]         @relation("SessionAnalyses")
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  deletedAt        DateTime?
+
+  @@index([userId, deletedAt, updatedAt])
+}
+
+/// One uploaded or imported page of a design.
+model Asset {
+  id           String          @id @default(uuid()) @db.Uuid
+  sessionId    String          @db.Uuid
+  session      DesignSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  kind         AssetKind
+  originalName String
+  storagePath  String
+  /// WebP preview used by the Design Library and upload screens.
+  thumbPath    String?
+  contentHash  String
+  mimeType     String
+  width        Int?
+  height       Int?
+  sizeBytes    Int
+  order        Int
+  figmaFileKey String?
+  figmaNodeId  String?
+  sourceUrl    String?
+  createdAt    DateTime        @default(now())
+  deletedAt    DateTime?
+  analyses     AnalysisAsset[]
+  findings     Finding[]
+
+  @@index([sessionId, order])
+}
+
+/// One immutable report run. Never updated after status becomes COMPLETE.
+model Analysis {
+  id                      String             @id @default(uuid()) @db.Uuid
+  sessionId               String             @db.Uuid
+  session                 DesignSession      @relation("SessionAnalyses", fields: [sessionId], references: [id], onDelete: Cascade)
+  latestFor               DesignSession?     @relation("LatestAnalysis")
+  iteration               Int
+  status                  AnalysisStatus     @default(QUEUED)
+  pageScope               PageScope
+  platform                Platform
+  goal                    String?
+  overallScore            Int?
+  intuitiveScore          Int?
+  trustedScore            Int?
+  valuableScore           Int?
+  scoreBreakdown          Json?
+  overallTakeaway         String?
+  rubricVersion           String?
+  promptVersion           String?
+  principleLibraryVersion String?
+  model                   String?
+  rawOutput               Json?
+  durationMs              Int?
+  failureReason           String?
+  createdAt               DateTime           @default(now())
+  completedAt             DateTime?
+  assets                  AnalysisAsset[]
+  takeaways               Takeaway[]
+  findings                Finding[]
+  recommendations         Recommendation[]
+  suggestedPrompts        SuggestedPrompt[]
+  messages                AssistantMessage[]
+
+  @@unique([sessionId, iteration])
+  @@index([sessionId, status])
+}
+
+model AnalysisAsset {
+  analysisId String   @db.Uuid
+  analysis   Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  assetId    String   @db.Uuid
+  asset      Asset    @relation(fields: [assetId], references: [id])
+  order      Int
+
+  @@id([analysisId, assetId])
+}
+
+/// A strength or pain point shown on the Key Takeaways tab.
+model Takeaway {
+  id         String       @id @default(uuid()) @db.Uuid
+  analysisId String       @db.Uuid
+  analysis   Analysis     @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  kind       TakeawayKind
+  order      Int
+  text       String
+
+  @@index([analysisId, kind, order])
+}
+
+/// One principle-based observation. Drives the Sentiment Map and the score.
+model Finding {
+  id              String                  @id @default(uuid()) @db.Uuid
+  analysisId      String                  @db.Uuid
+  analysis        Analysis                @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  assetId         String?                 @db.Uuid
+  asset           Asset?                  @relation(fields: [assetId], references: [id])
+  valence         Valence
+  severity        Severity
+  /// Category from the principle library, for example "Visual Hierarchy".
+  category        String
+  principleId     String
+  /// The design standard the principle comes from, for example "Nielsen heuristic 1".
+  standard        String
+  title           String
+  observation     String
+  impact          String
+  confidence      Confidence
+  /// Normalized 0 to 1 coordinates on the analyzed image. Null when not locatable.
+  markerX         Float?
+  markerY         Float?
+  iterationStatus IterationStatus?
+  recommendations RecommendationFinding[]
+
+  @@index([analysisId, valence])
+}
+
+model Recommendation {
+  id          String                  @id @default(uuid()) @db.Uuid
+  analysisId  String                  @db.Uuid
+  analysis    Analysis                @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  rank        Int
+  title       String
+  change      String
+  rationale   String
+  principleId String
+  findings    RecommendationFinding[]
+
+  @@unique([analysisId, rank])
+}
+
+model RecommendationFinding {
+  recommendationId String         @db.Uuid
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  findingId        String         @db.Uuid
+  finding          Finding        @relation(fields: [findingId], references: [id], onDelete: Cascade)
+
+  @@id([recommendationId, findingId])
+}
+
+/// Starter questions shown above the assistant input.
+model SuggestedPrompt {
+  id         String   @id @default(uuid()) @db.Uuid
+  analysisId String   @db.Uuid
+  analysis   Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  order      Int
+  text       String
+
+  @@index([analysisId, order])
+}
+
+/// Assistant chat history. Scoped to one session and, when known, one analysis.
+model AssistantMessage {
+  id         String        @id @default(uuid()) @db.Uuid
+  sessionId  String        @db.Uuid
+  session    DesignSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  analysisId String?       @db.Uuid
+  analysis   Analysis?     @relation(fields: [analysisId], references: [id])
+  role       MessageRole
+  content    String
+  createdAt  DateTime      @default(now())
+
+  @@index([sessionId, createdAt])
+}
