@@ -100,7 +100,7 @@ The application uses a **sidebar + workspace** layout, taken directly from the r
 ```
 Sidebar (272px, persistent on desktop, drawer on mobile)
         ↓
-Sticky Header (session title, search, upgrade, avatar)
+Sticky Header (session title, search, upgrade, light/dark icon)
         ↓
 Workspace (report tabs, cards, assistant)
 ```
@@ -311,7 +311,7 @@ Dark contrast checks:
 Theme switching:
 
 - Store the user's choice (`light`, `dark`, or `system`) in a cookie so the server renders the right `data-theme` with no flash.
-- The toggle lives in Settings and Privacy.
+- A sun/moon icon button at the top right of every page, where the avatar used to be, switches between light and dark. It shows the mode you will switch to. Settings and Privacy keeps the three-way choice, including System.
 - Images of the user's designs are never recolored.
 
 ---
@@ -449,7 +449,7 @@ Always compose primitives. Never duplicate them.
 ## App Shell
 
 - Sidebar: `w-[272px]`, white, `border-r border-line`, `pt-6 pb-6`, sticky full height on `lg`, off-canvas drawer below `lg` with a `bg-overlay/40` scrim.
-- Header: sticky, white, `px-4 py-3 sm:px-6 lg:px-9`, contains a hamburger below `lg`, the session title or search, the "Upgrade to VantagePro" button, and the avatar.
+- Header: sticky, white, `px-4 py-3 sm:px-6 lg:px-9`, contains a hamburger below `lg`, the session title or search, the "Upgrade to VantagePro" button, and the light/dark icon button.
 - Main: `px-4 pt-6 pb-9 sm:px-6 lg:px-9`.
 
 ---
@@ -462,9 +462,8 @@ Contents, from the Vantage AI mock-ups:
 - New Session (primary entry point)
 - Design Library
 - Previous Sessions (overline label, then a truncated list)
-- Settings and Privacy (bottom)
 - Upgrade to VantagePro (bottom)
-- Account row with avatar, name, email, and sign-out icon button
+- Account row with avatar, name, and email (bottom). Clicking it opens a menu above it with Settings and Privacy and Log out, like ChatGPT. Escape or a click outside closes it.
 
 Nav item:
 
@@ -537,8 +536,10 @@ Rules:
 
 ## Composer (Upload and Prompt)
 
-The New Session screen greets the user ("Hi {name}, where should we start?") above a single composer card.
+The New Session screen greets the user ("Hi {name}, where should we start?") above a single composer card. The layout follows ChatGPT.
 
+- Desktop (`sm` and up): greeting and card are one group, centered horizontally and vertically in the content area, `max-w-[768px]`. Row 1: "+", text input, image icon. Row 2: the two segmented controls with text labels.
+- Mobile: the header shows the menu button and the "Vantage" title. The greeting is centered in the free space. The card is pinned to the bottom (`rounded-2xl`). The text input is on the first row. Below it: "+" at the bottom left, the segmented controls as icon-only buttons in the middle (`iconOnlyOnMobile`), and the primary round image button at the bottom right.
 - Card: `rounded-xl border border-line bg-surface p-4 shadow-xs`, `focus-within:border-accent focus-within:ring-2 focus-within:ring-focus`.
 - Input placeholder: "URL, images or PDF asset".
 - Attach button: icon button with a plus icon. Supports drag-and-drop.
@@ -551,7 +552,7 @@ The New Session screen greets the user ("Hi {name}, where should we start?") abo
 
 ## Tabs and Segmented Controls
 
-Used for the report tabs (Key Takeaways, UX Score, Sentiment, Recommendations, Assistant) and the composer toggles.
+Used for the report tabs and the composer toggles. Tab order, left to right: **Sentiment, Recommendations, Key Takeaways, UX Score, Assistant**. Sentiment is the first tab and opens by default, so a designer sees what to fix on the design straight away.
 
 ```
 flex items-center gap-2 rounded-md border p-[11px] text-sm font-medium transition-colors
@@ -600,11 +601,14 @@ The Sentiment Map is the emotional-reaction map of the design. It pins smile and
 
 The tab label is **Sentiment**. It was renamed from "Valency" because designers recognize "sentiment" immediately, while "valency" reads as a chemistry term. The internal `Valence` enum is unchanged.
 
-- Design frame: `rounded-2xl border border-line bg-canvas`.
-- Control bar below the frame, in a `bg-surface border border-line rounded-xl` strip: "View Maps" toggle on the left, Likes / Dislikes segmented filter on the right.
+- **Two columns from `lg` (5 : 6).** The design is on the left and stays in view (`lg:sticky lg:top-24`) while the findings scroll on the right. Both must be visible on arrival without scrolling at a 1512 by 982 screen, and a browser test checks it. Below `lg` they stack, design first.
+- Design frame: `rounded-2xl border border-line bg-subtle`. The image may grow to `max(360px, 100vh - 15rem)` tall, so a phone screen is large enough to read. A wide picture is limited by the column width instead.
+- Under the design: the Page selector for journeys.
+- Top of the right column: the "View Maps" toggle in a `bg-surface border border-line rounded-xl` strip, then a heading ("What to fix" or "What works") with the Likes / Dislikes segmented filter.
+- **"Show on design"** is a real button, not a text link: secondary button with `border-accent bg-selected text-on-selected`, a crosshair icon in the accent color, and a 44px minimum height. The label stays in the high-contrast selected-text color because accent-colored text on the dark selected tint is only 4.25:1. Clicking it switches to the right page, highlights the marker, and moves focus to it.
 - Like marker: `bg-success-600` rounded square, 40px, with a white smile icon. Dislike marker: `bg-error-500` rounded square with a white frown icon. Both themes use the same marker colors.
 - Markers are buttons. Activating one scrolls to and highlights the matching finding.
-- Below a divider, findings are listed in two columns on `lg`. Each row has a 40px outline smile or frown icon, the principle as a title (`text-lg font-semibold text-fg`), and the explanation (`text-sm text-fg-subtle leading-relaxed`).
+- Findings are listed in one column on the right, separated by `border-divider` lines. Each row has a 40px outline smile or frown icon, the principle as a title (`text-lg font-semibold text-fg`), and the explanation (`text-sm text-fg-subtle leading-relaxed`).
 - Categories seen in Figma: Visual Hierarchy, Accessibility, Consistency, Feedback and Interaction, Mobile Responsiveness, Error Prevention.
 
 ## Upload Images Step
@@ -612,7 +616,7 @@ The tab label is **Sentiment**. It was renamed from "Valency" because designers 
 Second screen of a new session, from Figma.
 
 - Title "Upload Images" with the muted line "Upload UI images from your files to get started".
-- A rail of page thumbnails on the left (112 by 128 px, `rounded-xl`, 2px border). The selected page uses `border-accent`. A journey also shows a dashed add tile.
+- A rail of page thumbnails on the left (112 by 128 px, `rounded-xl`, 2px border). The selected page uses `border-accent`. A dashed add tile always sits below the thumbnails, until the page limit is reached. Adding a second page turns a Single Page session into a Multiple page journey, and a status message says so.
 - A large preview frame on the right (`rounded-2xl border border-line bg-subtle`) with a **Replace** secondary button at the top left and a red delete icon button at the top right.
 - Primary "Continue to analysis" button below, centered.
 - With no images yet (for example when uploading a new version), a large dashed drop zone with a file picker.
@@ -625,7 +629,7 @@ Second screen of a new session, from Figma.
 
 ## Analysis Loader
 
-"Fetching your insights..." with concentric rings that orbit and a core that breathes. Below it a seven-step list shows what is happening now: reading, hierarchy, accessibility, interaction, scoring, sentiment, recommendations. The current step is announced to screen readers. With reduced motion the rings stay still.
+"Fetching your insights..." with concentric rings that orbit and a core that breathes. Beside it (from `md`, stacked below) a seven-step list shows what is happening now: reading, hierarchy, accessibility, interaction, scoring, sentiment, recommendations. The animation and the list are side by side so both are visible at once without scrolling. Only the current step is announced to screen readers, not the whole list. With reduced motion the rings stay still.
 
 ## Report Header
 
@@ -645,6 +649,8 @@ Every report screen ends with a centered disclaimer in `text-xs text-fg-subtle`:
 
 ## Recommendation List
 
+- **Same two-column layout as the Sentiment Map** on the Recommendations tab: the design on the left (sticky, image height capped at `max(360px, 100vh - 16rem)`), the heading and the list on the right. Both are in view on arrival. Below `lg` they stack.
+- On the Assistant tab the list sits in a card beside the assistant instead.
 - Numbered, ordered by priority.
 - Each item: number in `cv01 text-lg font-semibold text-fg-subtle`, title in `text-base font-medium`, explanation in `text-sm text-fg-muted leading-relaxed`.
 - Items separated by `h-px bg-divider`.

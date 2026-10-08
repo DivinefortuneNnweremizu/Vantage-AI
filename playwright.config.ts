@@ -1,10 +1,9 @@
 import { defineConfig } from "@playwright/test";
 
 /**
- * End-to-end tests run against a running app. Start the local database and the dev server first:
- *   pnpm db:dev      (in one terminal)
- *   pnpm dev         (in another, with DEV_AUTH=true in .env.local)
- * Then: pnpm test:e2e
+ * End-to-end tests run against a running app. Start it first, with DEV_AUTH=true in .env.local:
+ *   npm run dev      (in one terminal; it starts the database too)
+ * Then: npm run test:e2e   (in another)
  *
  * Every test runs twice, once per theme.
  */

@@ -68,7 +68,7 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
 
       <ReportTabs sessionId={session.id} active={tab} iteration={iterationParam} />
 
-      {report.comparison && (tab === "takeaways" || tab === "score") ? (
+      {report.comparison && (tab === "sentiment" || tab === "takeaways" || tab === "score") ? (
         <IterationSummary comparison={report.comparison} iteration={report.analysis.iteration} />
       ) : null}
 

@@ -12,7 +12,7 @@ export function RecommendationList({ report, variant }: RecommendationsProps) {
   const findingById = new Map(report.findings.map((finding) => [finding.id, finding]));
 
   return (
-    <ol className={cn("flex flex-col", variant === "page" ? "mx-auto w-full max-w-3xl" : "")}>
+    <ol className={cn("flex flex-col", variant === "page" ? "w-full" : "")}>
       {report.recommendations.map((recommendation) => {
         const standards = Array.from(
           new Set(
@@ -55,17 +55,20 @@ export function Recommendations({ report, variant }: RecommendationsProps) {
   }
 
   return (
-    <section aria-labelledby="recs-heading" className="flex flex-col gap-6">
-      <h2 id="recs-heading" className="cv01 text-2xl font-semibold text-fg-strong">
-        Try these recommendations to make the experience better
-      </h2>
+    <section aria-labelledby="recs-heading" className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+      {/* The design stays in view on the left while the recommendations scroll on the right. */}
       <DesignPreview
         assets={report.assets}
         title={`Analyzed design: ${report.session.title}`}
-        className="mx-auto w-full max-w-3xl"
-        imageClassName="max-h-[380px]"
+        className="min-w-0 lg:sticky lg:top-24"
+        imageClassName="max-h-[max(360px,calc(100vh-16rem))]"
       />
-      <RecommendationList report={report} variant="page" />
+      <div className="flex min-w-0 flex-col gap-6">
+        <h2 id="recs-heading" className="cv01 text-2xl font-semibold text-fg-strong">
+          Try these recommendations to make the experience better
+        </h2>
+        <RecommendationList report={report} variant="page" />
+      </div>
     </section>
   );
 }

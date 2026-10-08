@@ -56,6 +56,8 @@ export async function addAsset(input: AddAssetInput): Promise<Asset> {
 
   let order = pending.length;
   let replaced: Asset | undefined;
+  // Adding a second page to a Single Page session turns it into a journey.
+  let becomesJourney = false;
 
   if (input.replaceAssetId) {
     replaced = pending.find((asset) => asset.id === input.replaceAssetId);
@@ -63,13 +65,16 @@ export async function addAsset(input: AddAssetInput): Promise<Asset> {
       throw new AppError("NOT_FOUND", "We could not find the image to replace.");
     }
     order = replaced.order;
-  } else if (session.pageScope === "SINGLE_PAGE" && pending.length >= 1) {
-    throw new AppError(
-      "CONFLICT",
-      "Single Page analyzes one image. Replace the current image, or switch to Multiple Page Journey.",
-    );
-  } else if (pending.length >= entitlements.pagesPerJourney) {
-    throw new AppError("CONFLICT", `A journey can have up to ${entitlements.pagesPerJourney} pages.`);
+  } else {
+    if (pending.length >= entitlements.pagesPerJourney) {
+      throw new AppError("CONFLICT", `A journey can have up to ${entitlements.pagesPerJourney} pages.`);
+    }
+    if (session.pageScope === "SINGLE_PAGE" && pending.length >= 1) {
+      if (!entitlements.journeyAnalysis) {
+        throw new AppError("FORBIDDEN", "Analyzing more than one page is part of VantagePro. Upgrade to add pages.");
+      }
+      becomesJourney = true;
+    }
   }
 
   // Validate and process before touching storage, so a bad file never leaves anything behind.
@@ -116,6 +121,10 @@ export async function addAsset(input: AddAssetInput): Promise<Asset> {
         });
       } else {
         await tx.designSession.update({ where: { id: session.id }, data: { updatedAt: new Date() } });
+      }
+
+      if (becomesJourney) {
+        await tx.designSession.update({ where: { id: session.id }, data: { pageScope: "JOURNEY" } });
       }
 
       return created;

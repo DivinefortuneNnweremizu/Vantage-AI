@@ -75,7 +75,8 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
     throw new AppError("VALIDATION_ERROR", "Add at least one image before you analyze.");
   }
   if (session.pageScope === "SINGLE_PAGE" && assets.length > 1) {
-    throw new AppError("CONFLICT", "Single Page analyzes one image. Remove the extra images or switch to Multiple Page Journey.");
+    // Adding a second page switches a session to a journey, so this only guards against inconsistent data.
+    throw new AppError("CONFLICT", "This design has more than one page but is set to Single Page. Reload the page and try again.");
   }
 
   // One run at a time per session. Runs that never finished are failed so they cannot block a retry.

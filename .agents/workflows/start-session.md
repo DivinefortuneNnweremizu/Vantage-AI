@@ -36,6 +36,8 @@ A designer lands on New Session, adds a design, states a goal, picks scope and p
 
 ## Rules
 
+- The dashed add tile on Upload Images is always shown. Adding a second page to a Single Page session switches it to a Multiple page journey and says so. Choosing several images on the New Session screen does the same.
+
 - Never trust a client-supplied user id. Derive it from the session.
 - Never lose uploaded assets if a later step fails.
 - Disable the submit button until at least one asset is present, and say why when it is disabled.

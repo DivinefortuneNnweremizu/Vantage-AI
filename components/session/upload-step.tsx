@@ -34,9 +34,11 @@ export function UploadStep({ sessionId, pageScope, assets, maxPages, skipped }: 
   const addInput = useRef<HTMLInputElement>(null);
   const replaceInput = useRef<HTMLInputElement>(null);
   const errorId = useId();
+  const [notice, setNotice] = useState<string | null>(null);
 
   const isJourney = pageScope === "JOURNEY";
-  const canAddMore = isJourney && assets.length < maxPages;
+  // The add tile is always there, as in the design. Adding a second page makes it a journey.
+  const canAddMore = assets.length < maxPages;
 
   // Keep the selection valid when images are added, replaced, or deleted.
   useEffect(() => {
@@ -51,11 +53,16 @@ export function UploadStep({ sessionId, pageScope, assets, maxPages, skipped }: 
     if (files.length === 0 || busy) return;
     setError(null);
 
-    const room = isJourney ? maxPages - assets.length : 1 - assets.length;
+    const room = maxPages - assets.length;
     const usable = files.slice(0, Math.max(room, 0));
     if (usable.length === 0) {
-      setError(isJourney ? `A journey can have up to ${maxPages} pages.` : "Single Page analyzes one image. Use Replace to swap it.");
+      setError(`A journey can have up to ${maxPages} pages.`);
       return;
+    }
+    if (usable.length < files.length) {
+      setNotice(`Only the first ${usable.length} ${usable.length === 1 ? "file was" : "files were"} added. A journey can have up to ${maxPages} pages.`);
+    } else {
+      setNotice(null);
     }
 
     const problem = usable.map(checkFileBeforeUpload).find((value) => value !== null);
@@ -66,10 +73,12 @@ export function UploadStep({ sessionId, pageScope, assets, maxPages, skipped }: 
 
     setBusy("add");
     let failures = 0;
+    let added = 0;
     let lastMessage = "";
     for (const file of usable) {
       try {
         await uploadAsset(sessionId, file);
+        added += 1;
       } catch (uploadError) {
         failures += 1;
         lastMessage = messageFor(uploadError);
@@ -77,6 +86,9 @@ export function UploadStep({ sessionId, pageScope, assets, maxPages, skipped }: 
     }
     if (failures > 0) {
       setError(failures === usable.length ? lastMessage : `${failures} of ${usable.length} files could not be added. ${lastMessage}`);
+    }
+    if (!isJourney && assets.length + added > 1) {
+      setNotice("You added more than one page, so this is now a Multiple page journey. All pages will be analyzed together.");
     }
     router.refresh();
     setBusy(null);
@@ -126,7 +138,7 @@ export function UploadStep({ sessionId, pageScope, assets, maxPages, skipped }: 
         ref={addInput}
         type="file"
         accept={ACCEPT_ATTRIBUTE}
-        multiple={isJourney}
+        multiple
         className="hidden"
         aria-label="Add design images"
         onChange={(event) => {
@@ -247,6 +259,9 @@ export function UploadStep({ sessionId, pageScope, assets, maxPages, skipped }: 
       </div>
 
       {errorMessage}
+      <p role="status" className={cn("max-w-[720px] text-center text-sm text-fg-muted", notice ? "" : "sr-only")}>
+        {notice}
+      </p>
 
       <Button size="lg" onClick={goToGoal} isLoading={busy === "continue"} disabled={busy !== null && busy !== "continue"}>
         Continue to analysis

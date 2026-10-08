@@ -25,3 +25,4 @@ test-results/
 
 # Local development data (embedded Postgres, uploads)
 .data/
+.next-*/

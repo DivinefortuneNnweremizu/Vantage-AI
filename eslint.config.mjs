@@ -32,7 +32,7 @@ const designSystemRules = {
 };
 
 const config = [
-  { ignores: [".next/**", "node_modules/**", "next-env.d.ts", "tokens/design-tokens.css"] },
+  { ignores: [".next/**", ".next-*/**", "node_modules/**", "next-env.d.ts", "tokens/design-tokens.css"] },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     // The token compiler is a plain Node CommonJS script.

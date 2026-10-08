@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Palette, Radar, Settings, Sparkles, X } from "lucide-react";
+import { Palette, Radar, Sparkles, X } from "lucide-react";
 
-import { signOutAction } from "@/features/auth/actions";
 import type { CurrentUser } from "@/features/auth/get-current-user";
 import type { SessionListItem } from "@/features/sessions/queries";
-import { Avatar } from "@/components/ui/avatar";
+import { ProfileMenu } from "@/components/layout/profile-menu";
 import { IconButton } from "@/components/ui/icon-button";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
@@ -51,7 +50,6 @@ function NavLink({ href, label, icon, isActive, onNavigate }: NavLinkProps) {
 
 export function Sidebar({ user, recentSessions, onNavigate, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const displayName = user.fullName ?? user.email;
 
   return (
     <div className="flex h-full flex-col justify-between gap-6 overflow-y-auto pt-6 pb-6">
@@ -121,16 +119,6 @@ export function Sidebar({ user, recentSessions, onNavigate, onClose }: SidebarPr
       </div>
 
       <div className="flex flex-col gap-2.5">
-        <ul className="flex flex-col gap-1 px-2">
-          <NavLink
-            href="/settings"
-            label="Settings and Privacy"
-            icon={<Settings className="size-5 shrink-0" aria-hidden="true" />}
-            isActive={pathname === "/settings"}
-            onNavigate={onNavigate}
-          />
-        </ul>
-
         <div className="px-4">
           <Link href="/settings/billing" onClick={onNavigate} className={cn(buttonVariants({ variant: "secondary" }), "w-full justify-start")}>
             <Sparkles className="size-4" aria-hidden="true" />
@@ -138,20 +126,7 @@ export function Sidebar({ user, recentSessions, onNavigate, onClose }: SidebarPr
           </Link>
         </div>
 
-        <div className="flex items-center justify-between gap-3 px-6 py-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <Avatar name={displayName} imageUrl={user.avatarUrl} />
-            <div className="min-w-0 text-sm">
-              <p className="cv01 truncate font-semibold">{displayName}</p>
-              <p className="truncate text-fg-muted">{user.email}</p>
-            </div>
-          </div>
-          <form action={signOutAction}>
-            <IconButton type="submit" tone="inline" aria-label="Sign out">
-              <LogOut className="size-5" aria-hidden="true" />
-            </IconButton>
-          </form>
-        </div>
+        <ProfileMenu user={user} onNavigate={onNavigate} />
       </div>
     </div>
   );

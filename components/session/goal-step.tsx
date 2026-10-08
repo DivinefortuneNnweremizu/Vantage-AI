@@ -53,19 +53,19 @@ export function GoalStep({ sessionId, coverAssetId, coverName, pageCount, initia
   }
 
   const preview = (
-    <div className="overflow-hidden rounded-2xl border border-line bg-subtle">
+    <div className={`overflow-hidden rounded-2xl border border-line bg-subtle ${phase === "running" ? "mx-auto w-fit max-w-full" : ""}`}>
       <AssetImage
         assetId={coverAssetId}
         alt={`Your design: ${coverName}`}
         priority
-        className={phase === "running" ? "mx-auto max-h-[200px] w-auto object-contain" : "mx-auto max-h-[44vh] w-auto object-contain"}
+        className={phase === "running" ? "mx-auto max-h-[150px] w-auto object-contain" : "mx-auto max-h-[44vh] w-auto object-contain"}
       />
     </div>
   );
 
   if (phase === "running") {
     return (
-      <div className="mx-auto flex w-full max-w-[560px] flex-col gap-8 pt-6">
+      <div className="mx-auto flex w-full max-w-[920px] flex-col gap-8 pt-6">
         {preview}
         <AnalysisLoader stage={stage} />
       </div>

@@ -342,11 +342,11 @@ Fetching your insights... (staged progress)
 
 ↓
 
-Design Analysis Report (Key Takeaways first)
+Design Analysis Report (opens on Sentiment)
 
 ↓
 
-Explore UX Score, Sentiment, Recommendations
+Explore Recommendations, Key Takeaways, UX Score
 
 ↓
 

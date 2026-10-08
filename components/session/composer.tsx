@@ -35,7 +35,13 @@ interface ComposerProps {
 }
 
 /**
- * The New Session screen. Adding images creates a draft session and moves to the Upload step.
+ * The New Session screen, laid out like ChatGPT.
+ *
+ * - Desktop: the greeting and the chat box sit together in the middle of the page, centered.
+ * - Mobile: the greeting is centered in the free space and the chat box is pinned to the bottom.
+ *   The box has the text on top, then "+" at the bottom left and the primary button at the bottom right.
+ *
+ * Adding images creates a draft session and moves to the Upload step.
  * Website and Figma links are not connected yet, so pasting one explains that instead of failing silently.
  */
 export function Composer({ firstName }: ComposerProps) {
@@ -54,7 +60,10 @@ export function Composer({ firstName }: ComposerProps) {
     if (isBusy || selected.length === 0) return;
     setMessage(null);
 
-    const usable = scope === "SINGLE_PAGE" ? selected.slice(0, 1) : selected.slice(0, MAX_JOURNEY_FILES);
+    // Choosing several images means a journey, whatever was selected above.
+    const effectiveScope: PageScope = selected.length > 1 ? "JOURNEY" : scope;
+    if (effectiveScope !== scope) setScope(effectiveScope);
+    const usable = selected.slice(0, MAX_JOURNEY_FILES);
     const problems = usable.map(checkFileBeforeUpload).filter((problem): problem is string => problem !== null);
     if (problems.length > 0) {
       setMessage(problems[0] ?? "Choose a PNG, JPG, or WebP image.");
@@ -63,7 +72,7 @@ export function Composer({ firstName }: ComposerProps) {
 
     setIsBusy(true);
     try {
-      const session = await postJson<{ id: string }>("/api/sessions", { pageScope: scope, platform });
+      const session = await postJson<{ id: string }>("/api/sessions", { pageScope: effectiveScope, platform });
 
       let skipped = selected.length - usable.length;
       for (const file of usable) {
@@ -85,19 +94,31 @@ export function Composer({ firstName }: ComposerProps) {
     }
   }
 
+  function openPicker(): void {
+    fileInput.current?.click();
+  }
+
   function handleSubmit(event: React.FormEvent): void {
     event.preventDefault();
     if (!text.trim()) {
-      fileInput.current?.click();
+      openPicker();
       return;
     }
     setMessage("Website and Figma links are coming soon. For now, upload an image of your design.");
   }
 
+  const addIcon = isBusy ? (
+    <Loader2 className="size-5 animate-spin" aria-hidden="true" />
+  ) : (
+    <Plus className="size-5" aria-hidden="true" />
+  );
+
   return (
-    <div className="mx-auto flex w-full max-w-[950px] flex-col gap-10 pt-6 lg:pt-16">
-      <div className="flex flex-col">
-        <h1 className="cv01 text-2xl font-semibold text-fg-strong sm:text-3xl">Hi {firstName},</h1>
+    // The page area is as tall as the screen under the header, so the greeting can be centered
+    // and the chat box can sit at the bottom on mobile.
+    <div className="mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-[768px] flex-col sm:justify-center sm:gap-10">
+      <div className="flex flex-1 flex-col items-center justify-center text-center sm:flex-none">
+        <h1 className="cv01 text-2xl font-semibold text-fg-muted sm:text-3xl">Hi {firstName},</h1>
         <p className="cv01 text-3xl font-normal text-fg-strong sm:text-5xl">Where should we start?</p>
       </div>
 
@@ -114,7 +135,8 @@ export function Composer({ firstName }: ComposerProps) {
           void startWithFiles(Array.from(event.dataTransfer.files));
         }}
         className={cn(
-          "flex flex-col gap-4 rounded-xl border bg-surface p-4 shadow-xs transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-focus",
+          "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-2xl border bg-surface p-3 shadow-xs transition-colors sm:gap-y-4 sm:rounded-xl sm:p-4",
+          "focus-within:border-accent focus-within:ring-2 focus-within:ring-focus",
           isDragging ? "border-accent bg-selected" : "border-line",
         )}
       >
@@ -122,7 +144,7 @@ export function Composer({ firstName }: ComposerProps) {
           ref={fileInput}
           type="file"
           accept={ACCEPT_ATTRIBUTE}
-          multiple={scope === "JOURNEY"}
+          multiple
           className="hidden"
           aria-label="Choose design images"
           onChange={(event) => {
@@ -131,34 +153,90 @@ export function Composer({ firstName }: ComposerProps) {
           }}
         />
 
-        <div className="flex items-center gap-3">
-          <IconButton tone="inline" aria-label="Add images" onClick={() => fileInput.current?.click()} disabled={isBusy}>
-            {isBusy ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <Plus className="size-5" aria-hidden="true" />}
-          </IconButton>
-          <label htmlFor={inputId} className="sr-only">
-            URL, images, or PDF asset
-          </label>
-          <input
-            id={inputId}
-            type="text"
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            placeholder="URL, Images or PDF asset"
-            aria-describedby={message ? messageId : undefined}
-            disabled={isBusy}
-            className="min-h-11 w-full bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle"
+        {/* Desktop: "+" on the left of the text. Hidden on mobile, where it moves below the text. */}
+        <IconButton
+          tone="inline"
+          aria-label="Add images"
+          onClick={openPicker}
+          disabled={isBusy}
+          className="hidden sm:col-start-1 sm:row-start-1 sm:inline-flex"
+        >
+          {addIcon}
+        </IconButton>
+
+        <label htmlFor={inputId} className="sr-only">
+          URL, images, or PDF asset
+        </label>
+        <input
+          id={inputId}
+          type="text"
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          placeholder="URL, Images or PDF asset"
+          aria-describedby={message ? messageId : undefined}
+          disabled={isBusy}
+          className="col-span-3 row-start-1 min-h-11 w-full bg-transparent px-1 text-base text-fg outline-none placeholder:text-fg-subtle sm:col-span-1 sm:col-start-2"
+        />
+
+        {/* Desktop: choose-images icon on the right of the text. */}
+        <IconButton
+          tone="inline"
+          aria-label="Choose images from your files"
+          onClick={openPicker}
+          disabled={isBusy}
+          className="hidden sm:col-start-3 sm:row-start-1 sm:inline-flex"
+        >
+          <ImageIcon className="size-5" aria-hidden="true" />
+        </IconButton>
+
+        {/* Mobile: "+" at the bottom left, like ChatGPT. */}
+        <IconButton
+          tone="inline"
+          aria-label="Add images"
+          onClick={openPicker}
+          disabled={isBusy}
+          className="col-start-1 row-start-2 size-11 sm:hidden"
+        >
+          {addIcon}
+        </IconButton>
+
+        {/* The two choices. Icon-only on mobile so they fit between the two buttons. */}
+        <div className="col-start-2 row-start-2 flex min-w-0 items-center justify-center gap-3 overflow-x-auto sm:col-span-3 sm:col-start-1 sm:justify-between sm:overflow-visible">
+          <SegmentedControl
+            label="Page scope"
+            value={scope}
+            options={SCOPE_OPTIONS}
+            onChange={setScope}
+            iconOnlyOnMobile
+            className="flex-nowrap gap-1 sm:flex-wrap sm:gap-2"
           />
-          <IconButton tone="inline" aria-label="Choose images from your files" onClick={() => fileInput.current?.click()} disabled={isBusy}>
-            <ImageIcon className="size-5" aria-hidden="true" />
-          </IconButton>
+          <SegmentedControl
+            label="Platform"
+            value={platform}
+            options={PLATFORM_OPTIONS}
+            onChange={setPlatform}
+            iconOnlyOnMobile
+            className="flex-nowrap gap-1 sm:flex-wrap sm:gap-2"
+          />
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <SegmentedControl label="Page scope" value={scope} options={SCOPE_OPTIONS} onChange={setScope} />
-          <SegmentedControl label="Platform" value={platform} options={PLATFORM_OPTIONS} onChange={setPlatform} />
-        </div>
+        {/* Mobile: the primary round button at the bottom right, like ChatGPT's. */}
+        <IconButton
+          tone="primary"
+          aria-label="Choose images from your files"
+          onClick={openPicker}
+          disabled={isBusy}
+          className="col-start-3 row-start-2 size-11 sm:hidden"
+        >
+          <ImageIcon className="size-5" aria-hidden="true" />
+        </IconButton>
 
-        <p id={messageId} role="status" aria-live="polite" className={cn("text-xs", message ? "text-error-fg" : "text-fg-subtle")}>
+        <p
+          id={messageId}
+          role="status"
+          aria-live="polite"
+          className={cn("col-span-3 text-xs", message ? "text-error-fg" : "text-fg-subtle sr-only sm:not-sr-only")}
+        >
           {message ?? "Drop PNG, JPG, or WebP images here, or use the plus button. Up to 10 MB each."}
         </p>
       </form>
