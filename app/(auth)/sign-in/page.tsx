@@ -4,7 +4,7 @@ import Link from "next/link";
 import { AuthForm } from "@/components/auth/auth-form";
 import { signInAction } from "@/features/auth/actions";
 
-export const metadata: Metadata = { title: "Sign in" };
+export const metadata: Metadata = { title: "Log in" };
 
 interface SignInPageProps {
   searchParams: Promise<{ next?: string; error?: string }>;
@@ -15,8 +15,11 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="cv01 text-xl font-semibold">Welcome back</h1>
+    <div className="flex flex-col gap-6 text-center">
+      <div className="flex flex-col gap-2">
+        <h1 className="cv01 text-2xl font-semibold text-fg-strong">Welcome back</h1>
+        <p className="text-base text-fg-muted">Log in to get design feedback you can act on.</p>
+      </div>
       {error === "auth_callback_failed" ? (
         <p role="alert" className="text-xs text-error-fg">
           We could not complete sign-in. Try again.
@@ -24,9 +27,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
       ) : null}
       <AuthForm mode="sign-in" action={signInAction} next={safeNext} />
       <p className="text-sm text-fg-muted">
-        New to Vantage?{" "}
+        Don&apos;t have an account?{" "}
         <Link href="/sign-up" className="font-medium text-fg underline underline-offset-2 hover:text-accent">
-          Create an account
+          Sign up
         </Link>
       </p>
     </div>

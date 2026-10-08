@@ -608,7 +608,7 @@ Following `db-migration-runner/skill.md`, schema and migration are committed tog
 
 ### Authentication
 
-- Supabase Auth for email and password and OAuth sign-in. Never reimplemented.
+- Supabase Auth for email and password sign-in. No Google or social sign-in for now. Never reimplemented.
 - Sessions in HTTP-only cookies through Supabase SSR helpers.
 - Middleware protects every route under `app/(app)/`.
 - On first sign-in, a server action upserts `User` and creates a `FREE` `Subscription` in one transaction.
@@ -753,7 +753,7 @@ All screens follow `design.md` and the recipes in `component-builder-skill/skill
 
 | Screen | Primary components | Notes |
 |---|---|---|
-| Sign in / Sign up | `ui/input`, `ui/button` | Single centered card, max width 400px |
+| Sign in / Sign up | `ui/input`, `ui/button` | Single centered card, max width 440px, ChatGPT-style pill fields (see design.md, Authentication screens) |
 | App shell | `layout/app-shell`, `layout/sidebar`, `layout/header` | Sidebar: New Session, Design Library, Previous Sessions, Settings and Privacy, Upgrade to VantagePro |
 | New Session | `session/composer`, `session/asset-thumbnail` | Greeting, attachments, goal, Single Page or Journey, App or Web |
 | Analysis progress | `session/analysis-progress` | Staged list in a live region |

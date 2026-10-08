@@ -18,7 +18,7 @@ Read these first:
 | Assistant chat grounded in the report | Built |
 | Scoring from design standards, with the principle library | Built |
 | Demo AI (fixture reports, clearly labeled) | Built. **Real AI is not connected yet** |
-| Sign-in with Supabase | Built, **not yet tested against a real Supabase project** |
+| Email and password sign-up, log-in, and onboarding (Supabase) | Built, **not yet tested against a real Supabase project**. No Google or social sign-in for now |
 | Website URL, Figma, and PDF input | Not built |
 | Plans, checkout, and limits (Flutterwave) | Not built |
 | Dark and light themes with a switch in Settings | Built |

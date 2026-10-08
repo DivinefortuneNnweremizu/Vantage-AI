@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { signInSchema, signUpSchema } from "@/features/auth/schemas";
+import { onboardingSchema, signInSchema, signUpSchema } from "@/features/auth/schemas";
 import { parseTheme } from "@/features/settings/theme";
 
 describe("auth schemas", () => {
@@ -13,9 +13,16 @@ describe("auth schemas", () => {
   });
 
   it("requires a 10 character password to sign up", () => {
-    const base = { fullName: "Ada", email: "ada@example.com" };
+    const base = { email: "ada@example.com" };
     expect(signUpSchema.safeParse({ ...base, password: "short" }).success).toBe(false);
     expect(signUpSchema.safeParse({ ...base, password: "long-enough-password" }).success).toBe(true);
+  });
+});
+
+describe("onboarding schema", () => {
+  it("needs a name", () => {
+    expect(onboardingSchema.safeParse({ fullName: "   " }).success).toBe(false);
+    expect(onboardingSchema.safeParse({ fullName: "Ada Lovelace" }).success).toBe(true);
   });
 });
 

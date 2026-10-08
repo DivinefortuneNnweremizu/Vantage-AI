@@ -7,8 +7,8 @@ export const signInSchema = z.object({
   password: z.string().min(1, "Enter your password."),
 });
 
+/** Sign-up is just an email and a password. The name is asked for in onboarding, right after. */
 export const signUpSchema = z.object({
-  fullName: z.string().trim().min(1, "Enter your name.").max(80, "Use 80 characters or fewer."),
   email: emailSchema,
   password: z
     .string()
@@ -16,5 +16,10 @@ export const signUpSchema = z.object({
     .max(128, "Use 128 characters or fewer."),
 });
 
+export const onboardingSchema = z.object({
+  fullName: z.string().trim().min(1, "Enter your name.").max(80, "Use 80 characters or fewer."),
+});
+
 export type SignInInput = z.infer<typeof signInSchema>;
 export type SignUpInput = z.infer<typeof signUpSchema>;
+export type OnboardingInput = z.infer<typeof onboardingSchema>;

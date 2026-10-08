@@ -534,6 +534,19 @@ Rules:
 
 ---
 
+## Authentication screens (Log in, Sign up, Welcome)
+
+Minimal, modeled on ChatGPT's "Log in or sign up" dialog. Email and password only. No Google, Apple, or phone buttons.
+
+- Layout: logo, then one centered card on `bg-canvas`. `max-w-[440px] rounded-3xl border border-line bg-surface px-6 py-8 shadow-md`.
+- Header: title `text-2xl font-semibold`, one muted sentence below. Centered.
+- Fields: pill inputs (`min-h-12 rounded-full px-5`), placeholders "Email address" and "Password", real labels kept as `sr-only`. The password field has a show/hide eye button.
+- One wide pill primary button: "Continue".
+- Footer link switches between Log in and Sign up.
+- Onboarding (`/welcome`): shown once, right after the first sign-up, before New Session. One question, "What should we call you?", one field. Sign-up itself asks only for email and password.
+
+---
+
 ## Composer (Upload and Prompt)
 
 The New Session screen greets the user ("Hi {name}, where should we start?") above a single composer card. The layout follows ChatGPT.

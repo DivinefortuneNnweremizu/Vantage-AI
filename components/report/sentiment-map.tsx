@@ -124,6 +124,7 @@ export function SentimentMap({ title, assets, findings }: SentimentMapProps) {
                 options={assets.map((_, index) => ({ value: String(index), label: `Page ${index + 1}` }))}
                 onChange={(value) => setPageIndex(Number(value))}
                 className="justify-center"
+                emphasis="strong"
               />
             ) : null}
           </>
