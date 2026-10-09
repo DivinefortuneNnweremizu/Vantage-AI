@@ -1,17 +1,8 @@
 import { cn } from "@/lib/cn";
 
-type AvatarSize = 40 | 48 | 64;
-
-const SIZE_CLASSES: Record<AvatarSize, string> = {
-  40: "size-10",
-  48: "size-12",
-  64: "size-16",
-};
-
 interface AvatarProps {
   name: string;
   imageUrl?: string | null;
-  size?: AvatarSize;
   className?: string;
 }
 
@@ -22,12 +13,11 @@ function initialsFor(name: string): string {
   return (first + last).toUpperCase();
 }
 
-export function Avatar({ name, imageUrl, size = 40, className }: AvatarProps) {
+export function Avatar({ name, imageUrl, className }: AvatarProps) {
   return (
     <span
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border-[1.5px] border-surface bg-subtle text-sm font-semibold text-fg-heading",
-        SIZE_CLASSES[size],
+        "relative inline-flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border-[1.5px] border-surface bg-subtle text-sm font-semibold text-fg-heading",
         className,
       )}
     >

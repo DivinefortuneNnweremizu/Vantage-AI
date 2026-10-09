@@ -6,7 +6,7 @@ export const themeSchema = z.enum(["light", "dark", "system"]);
 
 export type ThemePreference = z.infer<typeof themeSchema>;
 
-export const DEFAULT_THEME: ThemePreference = "system";
+const DEFAULT_THEME: ThemePreference = "system";
 
 export function parseTheme(value: string | undefined): ThemePreference {
   const parsed = themeSchema.safeParse(value);

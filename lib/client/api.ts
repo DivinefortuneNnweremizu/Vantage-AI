@@ -69,8 +69,8 @@ export interface UploadedAsset {
   height: number | null;
 }
 
-export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
-export const ACCEPTED_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+const ACCEPTED_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
 export const ACCEPT_ATTRIBUTE = ACCEPTED_MIME_TYPES.join(",");
 
 /** Checks a file in the browser for a faster, friendlier message. The server checks again. */

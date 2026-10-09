@@ -13,8 +13,6 @@ export interface ApiFailure {
   };
 }
 
-export type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
-
 export type ApiErrorCode =
   | "BAD_REQUEST"
   | "UNAUTHORIZED"

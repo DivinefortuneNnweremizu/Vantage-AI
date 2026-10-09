@@ -254,10 +254,6 @@ export function principleAppliesTo(principle: Principle, platform: "APP" | "WEB"
   return principle.platform === undefined || principle.platform === platform;
 }
 
-export function principlesFor(platform: "APP" | "WEB"): Principle[] {
-  return PRINCIPLES.filter((principle) => principleAppliesTo(principle, platform));
-}
-
 /** The six sections shown in the Figma design, in order, followed by the extra ones. */
 export const CATEGORY_ORDER: readonly PrincipleCategory[] = [
   "Visual Hierarchy",

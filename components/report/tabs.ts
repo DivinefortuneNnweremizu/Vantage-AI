@@ -9,7 +9,7 @@ export const REPORT_TABS = [
 export type ReportTabId = (typeof REPORT_TABS)[number]["id"];
 
 /** The first tab opens by default: what to fix, shown on the design itself. */
-export const DEFAULT_TAB: ReportTabId = "sentiment";
+const DEFAULT_TAB: ReportTabId = "sentiment";
 
 export function parseTab(value: string | undefined): ReportTabId {
   return REPORT_TABS.find((tab) => tab.id === value)?.id ?? DEFAULT_TAB;

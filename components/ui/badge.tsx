@@ -6,7 +6,6 @@ const badgeVariants = cva("inline-flex items-center justify-center gap-0.5 font-
   variants: {
     size: {
       sm: "rounded-badge px-1 text-xs",
-      md: "rounded-xl px-3 py-0.5 text-sm",
     },
     tone: {
       success: "bg-success-bg text-success-fg",
@@ -16,7 +15,7 @@ const badgeVariants = cva("inline-flex items-center justify-center gap-0.5 font-
       neutral: "bg-subtle text-fg-heading",
     },
   },
-  defaultVariants: { size: "md", tone: "neutral" },
+  defaultVariants: { size: "sm", tone: "neutral" },
 });
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {}

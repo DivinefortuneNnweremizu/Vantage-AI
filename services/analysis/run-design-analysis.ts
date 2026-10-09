@@ -14,7 +14,7 @@ import { computeScores } from "@/services/analysis/scoring/rubric";
 import { ReportValidationError, validateReport, type ValidatedReport } from "@/services/analysis/validate-report";
 import { getStorage } from "@/services/storage";
 
-export const PROMPT_VERSION = "1.0.0";
+const PROMPT_VERSION = "1.0.0";
 
 /** An analysis that has run this long without finishing is treated as dead. */
 const STALE_AFTER_MS = 5 * 60 * 1000;

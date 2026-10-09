@@ -9,12 +9,12 @@ import { z } from "zod";
  */
 const shortText = (max: number) => z.string().trim().min(1).max(max);
 
-export const markerSchema = z.object({
+const markerSchema = z.object({
   x: z.number().min(0).max(1),
   y: z.number().min(0).max(1),
 });
 
-export const findingSchema = z.object({
+const findingSchema = z.object({
   id: shortText(40),
   /** Zero-based index of the analyzed image this finding refers to. */
   assetIndex: z.number().int().min(0),
@@ -28,7 +28,7 @@ export const findingSchema = z.object({
   marker: markerSchema.nullable(),
 });
 
-export const recommendationSchema = z.object({
+const recommendationSchema = z.object({
   rank: z.number().int().min(1).max(20),
   title: shortText(100),
   change: shortText(500),
@@ -47,7 +47,6 @@ export const reportSchema = z.object({
 });
 
 export type ReportInput = z.infer<typeof reportSchema>;
-export type FindingInput = z.infer<typeof findingSchema>;
 export type RecommendationInput = z.infer<typeof recommendationSchema>;
 
 export const analysisRequestSchema = z.object({

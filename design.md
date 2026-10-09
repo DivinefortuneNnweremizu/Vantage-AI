@@ -504,7 +504,6 @@ focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acc
 |---------|---------|
 | Primary | `bg-action text-on-action hover:bg-action-hover active:bg-action-pressed` |
 | Secondary | `border border-line-strong bg-surface text-fg-heading hover:bg-hover` |
-| Ghost / link | `text-fg-subtle hover:text-fg-heading` with trailing chevron |
 | Destructive | `bg-error-500 text-white hover:bg-error-700` |
 | Icon button | `size-10 rounded-full bg-subtle hover:bg-subtle-hover` (header) or `size-9 rounded-full hover:bg-subtle` (inline) |
 
@@ -743,7 +742,7 @@ Use `role="switch"` and `aria-checked`.
 
 ## Avatar
 
-Circular, with a `border-[1.5px] border-white` ring. Sizes 40px (lists, header), 48px (feature rows), 64px (profile). An optional presence dot uses `bg-success-600` with a white border at the bottom-right.
+Circular, with a `border-[1.5px] border-white` ring. Size 40px. Add other sizes when a screen needs them.
 
 ---
 

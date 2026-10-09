@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-export const pageScopeSchema = z.enum(["SINGLE_PAGE", "JOURNEY"]);
-export const platformSchema = z.enum(["APP", "WEB"]);
+const pageScopeSchema = z.enum(["SINGLE_PAGE", "JOURNEY"]);
+const platformSchema = z.enum(["APP", "WEB"]);
 
 export const createSessionSchema = z.object({
   pageScope: pageScopeSchema,

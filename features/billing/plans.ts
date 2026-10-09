@@ -17,7 +17,7 @@ export interface Entitlements {
   pagesPerJourney: number;
 }
 
-export const PLAN_ENTITLEMENTS: Record<Plan, Entitlements> = {
+const PLAN_ENTITLEMENTS: Record<Plan, Entitlements> = {
   FREE: {
     analysesPerMonth: null,
     assistantMessagesPerMonth: null,

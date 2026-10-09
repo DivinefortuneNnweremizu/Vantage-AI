@@ -117,8 +117,6 @@ prisma/
 │   ├── 20260728113000_add_projects/
 │   │   └── migration.sql
 │   └── migration_lock.toml
-│
-└── seed.ts
 ```
 
 Every migration should have a descriptive name.

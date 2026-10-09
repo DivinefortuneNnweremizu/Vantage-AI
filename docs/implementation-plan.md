@@ -54,7 +54,7 @@ The pipeline is built against a **mocked provider** first. DeepSeek is confirmed
 
 - Next.js 15 App Router scaffold with pnpm, TypeScript strict mode, ESLint, and Prettier.
 - `app/globals.css` importing Tailwind and `tokens/design-tokens.css`, plus Open Sauce Two font loading.
-- `prisma/schema.prisma`, the initial migrations, `prisma/seed.ts`, and a shared Prisma client in `lib/prisma.ts`.
+- `prisma/schema.prisma`, the initial migrations, and a shared Prisma client in `lib/prisma.ts`.
 - Supabase project wiring: Auth clients for server and browser, private Storage buckets, RLS policies.
 - AI service layer with a mock provider and a DeepSeek provider slot.
 - Figma service for link import and OAuth.
@@ -248,8 +248,7 @@ Vantage AI/
 ├── hooks/
 ├── prisma/
 │   ├── schema.prisma
-│   ├── migrations/
-│   └── seed.ts
+│   └── migrations/
 ├── types/
 ├── public/
 ├── tests/
@@ -600,7 +599,6 @@ Following `db-migration-runner/skill.md`, schema and migration are committed tog
 - Every user-owned read uses `findFirst({ where: { id, userId } })` or a relation filter through `session.userId`. Never a bare `findUnique` by id on user data.
 - Report persistence uses a single `prisma.$transaction` so a report is stored completely or not at all.
 - Soft deletes use `deletedAt` and every list query filters it.
-- `prisma/seed.ts` creates a demo user, a demo session, and a mock report from `tests/fixtures`.
 
 ---
 
@@ -924,7 +922,7 @@ The test database is a separate Postgres instance. `prisma migrate reset` runs o
 - Git init, Next.js 15, TypeScript, pnpm, ESLint, Prettier.
 - `app/globals.css` with tokens, font, and base type. Root layout sets `data-theme` from the preference cookie.
 - Supabase project: Auth, private Storage bucket, storage policies.
-- Prisma: schema migrations 1 and 2, `lib/prisma.ts`, seed script.
+- Prisma: schema migrations 1 and 2, `lib/prisma.ts`.
 - First-sign-in user and subscription creation.
 - App shell: sidebar, header, empty New Session and Library screens.
 - Write `start-session.md` and `run-analysis.md` workflows.
@@ -1070,7 +1068,7 @@ Names only.
 1. Git init, scaffold, lint and format config.
 2. `globals.css` with tokens, font, and base styles.
 3. Supabase Auth and private Storage bucket.
-4. Prisma schema, migrations 1 and 2, client singleton, seed.
+4. Prisma schema, migrations 1 and 2, client singleton.
 5. App shell with empty New Session and Library screens.
 6. Composer and uploads, including PDF rendering.
 7. Report schemas, mock provider, analysis route with streamed progress, migrations 3 and 4.

@@ -8,7 +8,7 @@ interface AssetImageProps {
   priority?: boolean;
 }
 
-export function assetUrl(assetId: string, size: "full" | "thumb" = "full"): string {
+function assetUrl(assetId: string, size: "full" | "thumb" = "full"): string {
   return `/api/assets/${assetId}/file${size === "thumb" ? "?size=thumb" : ""}`;
 }
 

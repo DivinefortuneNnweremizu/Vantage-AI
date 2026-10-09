@@ -12,7 +12,6 @@ export const buttonVariants = cva(
       variant: {
         primary: "bg-action text-on-action hover:bg-action-hover active:bg-action-pressed",
         secondary: "border border-line-strong bg-surface text-fg-heading hover:bg-hover",
-        ghost: "text-fg-subtle hover:text-fg-heading",
         destructive: "bg-error-500 text-white hover:bg-error-700",
       },
       size: {

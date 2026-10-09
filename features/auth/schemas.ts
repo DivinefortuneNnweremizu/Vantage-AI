@@ -19,7 +19,3 @@ export const signUpSchema = z.object({
 export const onboardingSchema = z.object({
   fullName: z.string().trim().min(1, "Enter your name.").max(80, "Use 80 characters or fewer."),
 });
-
-export type SignInInput = z.infer<typeof signInSchema>;
-export type SignUpInput = z.infer<typeof signUpSchema>;
-export type OnboardingInput = z.infer<typeof onboardingSchema>;

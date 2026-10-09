@@ -34,7 +34,7 @@ export async function listAssistantMessages(userId: string, sessionId: string): 
 }
 
 /** Only what the assistant may talk about: the saved report. Nothing else is sent to the model. */
-export function toChatContext(report: ReportView): ChatReportContext {
+function toChatContext(report: ReportView): ChatReportContext {
   return {
     title: report.session.title,
     goal: report.analysis.goal,
