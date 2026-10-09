@@ -38,6 +38,7 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
           <Input
             id="fullName"
             name="fullName"
+            defaultValue={state.fullName}
             autoComplete="name"
             placeholder="Full name"
             className={pillInput}
@@ -55,6 +56,7 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
             <Input
               id="email"
               name="email"
+              defaultValue={state.email}
               type="email"
               autoComplete="email"
               placeholder="Email address"

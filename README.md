@@ -50,7 +50,7 @@ The app reads two git-ignored files, `.env` (for Prisma) and `.env.local` (for N
 2. Put those three lines in both `.env` and `.env.local`, and add `&pgbouncer=true` to the first two. The local database serves one session, so without that setting a second client breaks the running app.
 3. In `.env.local` set `DEV_AUTH=true`, `STORAGE_DRIVER=local`, and `AI_PROVIDER=mock`.
 
-`DEV_AUTH=true` signs you in as a demo user. It is ignored when `NODE_ENV=production`, and a test enforces that.
+`DEV_AUTH=true` replaces Supabase with a fake sign-in. Every `npm run dev` starts signed out. A browser with no account yet lands on **Sign up**, then onboarding ("What should we call you?"). A browser that already finished onboarding or logged in lands on **Log in** (any email and password continues as the demo user). Log out works too. The e2e tests sign in once in `tests/e2e/global-setup.ts`. It is ignored when `NODE_ENV=production`, and a test enforces that.
 
 Reports made with `AI_PROVIDER=mock` are invented sample content. They carry a visible "Demo report" notice. The mock provider is refused in production.
 

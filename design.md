@@ -543,6 +543,7 @@ Minimal, modeled on ChatGPT's "Log in or sign up" dialog. Email and password onl
 - Fields: pill inputs (`min-h-12 rounded-full px-5`), placeholders "Email address" and "Password", real labels kept as `sr-only`. The password field has a show/hide eye button.
 - One wide pill primary button: "Continue".
 - Footer link switches between Log in and Sign up.
+- Entry: a signed-out visitor with no account lands on Sign up, then onboarding. A returning visitor lands on Log in.
 - Onboarding (`/welcome`): shown once, right after the first sign-up, before New Session. One question, "What should we call you?", one field. Sign-up itself asks only for email and password.
 
 ---

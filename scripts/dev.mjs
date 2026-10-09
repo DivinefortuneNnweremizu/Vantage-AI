@@ -6,6 +6,7 @@
 //
 // Ctrl+C stops both. Development only: this never runs in production.
 import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { existsSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import net from "node:net";
@@ -133,6 +134,7 @@ if (migrateCode !== 0) {
 process.stdout.write("Starting the app...\n\n");
 app = spawn(process.execPath, [require.resolve("next/dist/bin/next"), "dev", ...process.argv.slice(2)], {
   stdio: "inherit",
-  env: process.env,
+  // A new id each start makes earlier dev sessions invalid, so the app starts at Sign up or Log in.
+  env: { ...process.env, DEV_BOOT_ID: randomUUID() },
 });
 app.once("exit", (code) => void stop(code ?? 0));

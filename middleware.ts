@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { DEV_KNOWN_COOKIE, DEV_SESSION_COOKIE, parseDevSession } from "@/features/auth/dev-auth";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
 interface CookieToSet {
@@ -21,7 +22,18 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // Local development sign-in. Never true in production. See features/auth/dev-auth.ts.
   if (process.env.NODE_ENV !== "production" && process.env.DEV_AUTH === "true") {
     const { pathname } = request.nextUrl;
-    if (pathname === "/sign-in" || pathname === "/sign-up") {
+    const signedIn = parseDevSession(request.cookies.get(DEV_SESSION_COOKIE)?.value) !== null;
+    // A browser that already has an account goes to Log in. A new visitor goes to Sign up, then onboarding.
+    const entry = request.cookies.has(DEV_KNOWN_COOKIE) ? "/sign-in" : "/sign-up";
+    const isAuthPage = pathname === "/sign-in" || pathname === "/sign-up";
+    if (!signedIn && !isAuthPage && !isPublicPath(pathname) && !pathname.startsWith("/api/")) {
+      const signInUrl = request.nextUrl.clone();
+      signInUrl.pathname = entry;
+      signInUrl.search = "";
+      if (pathname !== "/" && entry === "/sign-in") signInUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(signInUrl);
+    }
+    if (signedIn && isAuthPage) {
       const homeUrl = request.nextUrl.clone();
       homeUrl.pathname = "/";
       homeUrl.search = "";

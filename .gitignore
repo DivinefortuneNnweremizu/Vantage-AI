@@ -26,3 +26,6 @@ test-results/
 # Local development data (embedded Postgres, uploads)
 .data/
 .next-*/
+
+# Saved sign-in for e2e tests
+tests/e2e/.auth/
