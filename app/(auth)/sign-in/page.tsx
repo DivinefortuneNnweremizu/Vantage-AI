@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { AuthForm } from "@/components/auth/auth-form";
 import { signInAction } from "@/features/auth/actions";
+import { safeRedirectPath } from "@/features/auth/redirect";
 
 export const metadata: Metadata = { title: "Log in" };
 
@@ -12,7 +13,7 @@ interface SignInPageProps {
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const { next, error } = await searchParams;
-  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
+  const safeNext = next ? safeRedirectPath(next) : undefined;
 
   return (
     <div className="flex flex-col gap-6 text-center">

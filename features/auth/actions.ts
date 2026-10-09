@@ -1,12 +1,13 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { DEV_KNOWN_COOKIE, DEV_NAME_COOKIE, DEV_SESSION_COOKIE, encodeDevSession, isDevAuthEnabled, type DevSessionKind } from "@/features/auth/dev-auth";
+import { isDevAuthEnabled } from "@/features/auth/dev-auth";
+import { endDevSession, saveDevName, startDevSession } from "@/features/auth/dev-session";
 import { getSessionUser } from "@/features/auth/get-current-user";
+import { safeRedirectPath } from "@/features/auth/redirect";
 import { onboardingSchema, signInSchema, signUpSchema } from "@/features/auth/schemas";
 
 export interface AuthFormState {
@@ -22,21 +23,6 @@ function textField(formData: FormData, name: string): string {
   return typeof value === "string" ? value : "";
 }
 
-const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
-
-async function startDevSession(kind: DevSessionKind): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.set(DEV_SESSION_COOKIE, encodeDevSession(kind), { path: "/", sameSite: "lax", httpOnly: true });
-  // Signing in means this browser has an account. Sign-ups are marked once onboarding is done.
-  if (kind === "existing") markDevBrowserKnown(cookieStore);
-  // A fresh sign-up starts without a name, so onboarding asks for it.
-  cookieStore.delete(DEV_NAME_COOKIE);
-}
-
-function markDevBrowserKnown(cookieStore: Awaited<ReturnType<typeof cookies>>): void {
-  cookieStore.set(DEV_KNOWN_COOKIE, "1", { path: "/", maxAge: ONE_YEAR_SECONDS, sameSite: "lax", httpOnly: true });
-}
-
 const GENERIC_AUTH_ERROR = "We could not sign you in. Check your email and password and try again.";
 
 export async function signInAction(_previous: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -49,8 +35,7 @@ export async function signInAction(_previous: AuthFormState, formData: FormData)
     return { error: parsed.error.issues[0]?.message ?? GENERIC_AUTH_ERROR, message: null, email: textField(formData, "email") };
   }
 
-  const next = formData.get("next");
-  const destination = typeof next === "string" && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const destination = safeRedirectPath(formData.get("next"));
 
   // Dev sign-in: any valid details continue as the demo user.
   if (isDevAuthEnabled()) {
@@ -115,9 +100,7 @@ export async function completeOnboardingAction(_previous: AuthFormState, formDat
 
   // Dev sign-in has no Supabase account. The name is kept in a cookie.
   if (isDevAuthEnabled()) {
-    const cookieStore = await cookies();
-    cookieStore.set(DEV_NAME_COOKIE, parsed.data.fullName, { path: "/", maxAge: ONE_YEAR_SECONDS, sameSite: "lax", httpOnly: true });
-    markDevBrowserKnown(cookieStore);
+    await saveDevName(parsed.data.fullName);
     redirect("/");
   }
 
@@ -131,13 +114,10 @@ export async function completeOnboardingAction(_previous: AuthFormState, formDat
 
 export async function signOutAction(): Promise<void> {
   if (isDevAuthEnabled()) {
-    const cookieStore = await cookies();
-    cookieStore.delete(DEV_SESSION_COOKIE);
-    cookieStore.delete(DEV_NAME_COOKIE);
-    redirect("/sign-in");
+    await endDevSession();
+  } else {
+    const supabase = await createSupabaseServerClient();
+    await supabase.auth.signOut();
   }
-
-  const supabase = await createSupabaseServerClient();
-  await supabase.auth.signOut();
   redirect("/sign-in");
 }

@@ -84,3 +84,24 @@ describe("diffIterations", () => {
     expect(diff.resolved.map((item) => item.id)).toEqual(["far"]);
   });
 });
+
+describe("fromStoredFinding", () => {
+  const stored = { id: "f1", principleId: "p1", valence: "DISLIKE" as const, assetId: "a2", markerX: 0.2, markerY: 0.4 };
+
+  it("maps a saved finding, with its page order and marker", async () => {
+    const { fromStoredFinding } = await import("@/services/analysis/match-iterations");
+    expect(fromStoredFinding(stored, new Map([["a2", 1]]))).toEqual({
+      id: "f1",
+      principleId: "p1",
+      valence: "dislike",
+      assetOrder: 1,
+      marker: { x: 0.2, y: 0.4 },
+    });
+  });
+
+  it("uses page 0 and no marker when they are not known", async () => {
+    const { fromStoredFinding } = await import("@/services/analysis/match-iterations");
+    const result = fromStoredFinding({ ...stored, valence: "LIKE", assetId: null, markerX: null, markerY: 0.4 }, new Map());
+    expect(result).toMatchObject({ valence: "like", assetOrder: 0, marker: null });
+  });
+});

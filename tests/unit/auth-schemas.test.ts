@@ -38,3 +38,17 @@ describe("theme preference", () => {
     expect(parseTheme("system")).toBe("system");
   });
 });
+
+describe("safeRedirectPath", () => {
+  it("allows paths on this site", async () => {
+    const { safeRedirectPath } = await import("@/features/auth/redirect");
+    expect(safeRedirectPath("/library")).toBe("/library");
+  });
+
+  it("falls back for anything that could leave the site", async () => {
+    const { safeRedirectPath } = await import("@/features/auth/redirect");
+    for (const value of ["//evil.com", "https://evil.com", "library", "", null, undefined]) {
+      expect(safeRedirectPath(value)).toBe("/");
+    }
+  });
+});

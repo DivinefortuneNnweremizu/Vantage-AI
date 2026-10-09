@@ -13,6 +13,8 @@ interface RouteContext {
 
 export const runtime = "nodejs";
 
+const TOO_LARGE_MESSAGE = "That file is larger than 10 MB. Export a smaller image and try again.";
+
 /**
  * Uploads one image to a session the user owns. Send multipart form data with a "file" field,
  * and optionally "replaceAssetId" to swap an existing pending image.
@@ -31,7 +33,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     // would fail inside the parser with a vague error. Say the real reason instead.
     const declaredLength = Number(request.headers.get("content-length") ?? "0");
     if (declaredLength > MAX_UPLOAD_BYTES) {
-      throw new AppError("VALIDATION_ERROR", "That file is larger than 10 MB. Export a smaller image and try again.");
+      throw new AppError("VALIDATION_ERROR", TOO_LARGE_MESSAGE);
     }
 
     const form = await request.formData().catch(() => {
@@ -43,7 +45,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       throw new AppError("BAD_REQUEST", "Choose an image to upload.");
     }
     if (file.size > MAX_UPLOAD_BYTES) {
-      throw new AppError("VALIDATION_ERROR", "That file is larger than 10 MB. Export a smaller image and try again.");
+      throw new AppError("VALIDATION_ERROR", TOO_LARGE_MESSAGE);
     }
 
     const replaceRaw = form.get("replaceAssetId");

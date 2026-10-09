@@ -1,20 +1,15 @@
-import { randomUUID } from "node:crypto";
-import type { Prisma } from "@prisma/client";
-
 import { AppError } from "@/lib/app-error";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { STAGE_LABELS, type AnalysisEvent, type AnalysisProgressStage } from "@/features/analysis/schemas";
 import { getOwnedSession } from "@/features/sessions/service";
 import { getAiProvider } from "@/services/ai";
-import { PRINCIPLE_LIBRARY_VERSION } from "@/services/ai/principles/library";
-import { AiProviderUnavailableError, type AnalyzeInput } from "@/services/ai/provider";
-import { diffIterations, type ComparableFinding } from "@/services/analysis/match-iterations";
+import { AiProviderUnavailableError, type AiProvider, type AnalyzeInput } from "@/services/ai/provider";
+import { diffIterations, fromStoredFinding, type ComparableFinding } from "@/services/analysis/match-iterations";
+import { persistReport } from "@/services/analysis/persist-report";
 import { computeScores } from "@/services/analysis/scoring/rubric";
 import { ReportValidationError, validateReport, type ValidatedReport } from "@/services/analysis/validate-report";
 import { getStorage } from "@/services/storage";
-
-const PROMPT_VERSION = "1.0.0";
 
 /** An analysis that has run this long without finishing is treated as dead. */
 const STALE_AFTER_MS = 5 * 60 * 1000;
@@ -54,20 +49,15 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   });
 }
 
+type OwnedSession = Awaited<ReturnType<typeof getOwnedSession>>;
+
 /**
- * Runs one full analysis for a session the user owns. See .agents/workflows/run-analysis.md.
- *
- * Every step that can fail marks the analysis FAILED and keeps the uploaded images,
- * so the user can retry without uploading again. A completed analysis is never changed.
+ * Checks that the session can be analyzed, then returns its pending pages.
+ * Also fails runs that never finished, so they cannot block a retry.
  */
-export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): Promise<AnalysisOutcome> {
-  const startedAt = Date.now();
-  const { userId, sessionId } = params;
-
-  const session = await getOwnedSession(userId, sessionId);
-
+async function loadPendingAssets(session: OwnedSession) {
   const assets = await prisma.asset.findMany({
-    where: { sessionId, deletedAt: null, analyses: { none: { analysis: { status: "COMPLETE" } } } },
+    where: { sessionId: session.id, deletedAt: null, analyses: { none: { analysis: { status: "COMPLETE" } } } },
     orderBy: { order: "asc" },
   });
 
@@ -79,19 +69,56 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
     throw new AppError("CONFLICT", "This design has more than one page but is set to Single Page. Reload the page and try again.");
   }
 
-  // One run at a time per session. Runs that never finished are failed so they cannot block a retry.
   const staleBefore = new Date(Date.now() - STALE_AFTER_MS);
   await prisma.analysis.updateMany({
-    where: { sessionId, status: { in: ["QUEUED", "RUNNING"] }, createdAt: { lte: staleBefore } },
+    where: { sessionId: session.id, status: { in: ["QUEUED", "RUNNING"] }, createdAt: { lte: staleBefore } },
     data: { status: "FAILED", failureReason: "The analysis did not finish." },
   });
+  // One run at a time per session.
   const active = await prisma.analysis.findFirst({
-    where: { sessionId, status: { in: ["QUEUED", "RUNNING"] } },
+    where: { sessionId: session.id, status: { in: ["QUEUED", "RUNNING"] } },
     select: { id: true },
   });
   if (active) {
     throw new AppError("CONFLICT", "An analysis is already running for this design. Wait for it to finish.");
   }
+
+  return assets;
+}
+
+/** Asks the provider for a report. A report that fails validation gets one more try, with the problems listed. */
+async function requestValidatedReport(
+  provider: AiProvider,
+  input: AnalyzeInput,
+  context: { assetCount: number; platform: OwnedSession["platform"] },
+  analysisId: string,
+): Promise<ValidatedReport> {
+  const first = await withTimeout(provider.analyze(input), PROVIDER_TIMEOUT_MS);
+  try {
+    return validateReport(first, context);
+  } catch (error) {
+    if (!(error instanceof ReportValidationError)) throw error;
+    logger.warn("Report failed validation, retrying once", { analysisId, issues: error.issues.length });
+    const second = await withTimeout(
+      provider.analyze({ ...input, validationFeedback: error.issues.slice(0, 10) }),
+      PROVIDER_TIMEOUT_MS,
+    );
+    return validateReport(second, context);
+  }
+}
+
+/**
+ * Runs one full analysis for a session the user owns. See .agents/workflows/run-analysis.md.
+ *
+ * Every step that can fail marks the analysis FAILED and keeps the uploaded images,
+ * so the user can retry without uploading again. A completed analysis is never changed.
+ */
+export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): Promise<AnalysisOutcome> {
+  const startedAt = Date.now();
+  const { userId, sessionId } = params;
+
+  const session = await getOwnedSession(userId, sessionId);
+  const assets = await loadPendingAssets(session);
 
   const goal = params.goal !== undefined ? params.goal.trim() || null : session.goal;
 
@@ -163,30 +190,17 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
     // The provider call is one request, so the middle stages advance on a timer while it runs.
     const middleStages: AnalysisProgressStage[] = ["hierarchy", "accessibility", "interaction"];
     let nextStage = 0;
-    const tickMs = provider.isDemo ? 900 : 5000;
     const ticker = setInterval(() => {
       const value = middleStages[nextStage];
       if (value) {
         stage(value);
         nextStage += 1;
       }
-    }, tickMs);
+    }, provider.isDemo ? 900 : 5000);
 
     let report: ValidatedReport;
     try {
-      const context = { assetCount: assets.length, platform: session.platform };
-      const first = await withTimeout(provider.analyze(input), PROVIDER_TIMEOUT_MS);
-      try {
-        report = validateReport(first, context);
-      } catch (error) {
-        if (!(error instanceof ReportValidationError)) throw error;
-        logger.warn("Report failed validation, retrying once", { analysisId, issues: error.issues.length });
-        const second = await withTimeout(
-          provider.analyze({ ...input, validationFeedback: error.issues.slice(0, 10) }),
-          PROVIDER_TIMEOUT_MS,
-        );
-        report = validateReport(second, context);
-      }
+      report = await requestValidatedReport(provider, input, { assetCount: assets.length, platform: session.platform }, analysisId);
     } finally {
       clearInterval(ticker);
     }
@@ -204,16 +218,10 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
 
     stage("sentiment");
     await sleep(stageGapMs);
-    const previousOrderByAsset = new Map(previous?.assets.map((link) => [link.assetId, link.order]) ?? []);
+    const previousOrder = new Map(previous?.assets.map((link) => [link.assetId, link.order]) ?? []);
     const diff = previous
       ? diffIterations(
-          previous.findings.map<ComparableFinding>((finding) => ({
-            id: finding.id,
-            principleId: finding.principleId,
-            valence: finding.valence === "LIKE" ? "like" : "dislike",
-            assetOrder: finding.assetId ? (previousOrderByAsset.get(finding.assetId) ?? 0) : 0,
-            marker: finding.markerX !== null && finding.markerY !== null ? { x: finding.markerX, y: finding.markerY } : null,
-          })),
+          previous.findings.map((finding) => fromStoredFinding(finding, previousOrder)),
           report.findings.map<ComparableFinding>((finding) => ({
             id: finding.id,
             principleId: finding.principleId,
@@ -227,105 +235,16 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
     stage("recommendations");
     await sleep(stageGapMs);
 
-    const findingIdByModelId = new Map(report.findings.map((finding) => [finding.id, randomUUID()]));
-    const recommendationIds = report.recommendations.map(() => randomUUID());
-
-    // The rubric works with the model's temporary finding ids. Store the real ones so the
-    // report can say which finding moved each score.
-    const scoreBreakdown = Object.fromEntries(
-      Object.entries(scores.dimensions).map(([dimension, result]) => [
-        dimension,
-        {
-          ...result,
-          contributions: result.contributions.map((entry) => ({
-            ...entry,
-            findingId: findingIdByModelId.get(entry.findingId) ?? entry.findingId,
-          })),
-        },
-      ]),
-    );
-
-    await prisma.$transaction(async (tx) => {
-      await tx.analysis.update({
-        where: { id: analysisId },
-        data: {
-          status: "COMPLETE",
-          overallScore: scores.overall,
-          intuitiveScore: scores.dimensions.intuitive.score,
-          trustedScore: scores.dimensions.trusted.score,
-          valuableScore: scores.dimensions.valuable.score,
-          scoreBreakdown: scoreBreakdown as unknown as Prisma.InputJsonValue,
-          overallTakeaway: report.overallTakeaway,
-          rubricVersion: scores.rubricVersion,
-          promptVersion: PROMPT_VERSION,
-          principleLibraryVersion: PRINCIPLE_LIBRARY_VERSION,
-          model: provider.model,
-          rawOutput: report as unknown as Prisma.InputJsonValue,
-          durationMs: Date.now() - startedAt,
-          completedAt: new Date(),
-        },
-      });
-
-      await tx.takeaway.createMany({
-        data: [
-          ...report.strengths.map((text, order) => ({ analysisId, kind: "STRENGTH" as const, order, text })),
-          ...report.painPoints.map((text, order) => ({ analysisId, kind: "PAIN_POINT" as const, order, text })),
-        ],
-      });
-
-      await tx.finding.createMany({
-        data: report.findings.map((finding) => ({
-          id: findingIdByModelId.get(finding.id) as string,
-          analysisId,
-          assetId: assets[finding.assetIndex]?.id ?? null,
-          valence: finding.valence === "like" ? ("LIKE" as const) : ("DISLIKE" as const),
-          severity: finding.severity.toUpperCase() as "CRITICAL" | "MAJOR" | "MINOR" | "STRENGTH",
-          category: finding.category,
-          principleId: finding.principleId,
-          standard: finding.standard,
-          title: finding.title,
-          observation: finding.observation,
-          impact: finding.impact,
-          confidence: finding.confidence.toUpperCase() as "HIGH" | "MEDIUM" | "LOW",
-          markerX: finding.marker?.x ?? null,
-          markerY: finding.marker?.y ?? null,
-          iterationStatus: diff?.current.get(finding.id) ?? null,
-        })),
-      });
-
-      await tx.recommendation.createMany({
-        data: report.recommendations.map((recommendation, index) => ({
-          id: recommendationIds[index] as string,
-          analysisId,
-          rank: recommendation.rank,
-          title: recommendation.title,
-          change: recommendation.change,
-          rationale: recommendation.rationale,
-          principleId: recommendation.principleId,
-        })),
-      });
-
-      await tx.recommendationFinding.createMany({
-        data: report.recommendations.flatMap((recommendation, index) =>
-          recommendation.findingIds.map((modelId) => ({
-            recommendationId: recommendationIds[index] as string,
-            findingId: findingIdByModelId.get(modelId) as string,
-          })),
-        ),
-      });
-
-      await tx.suggestedPrompt.createMany({
-        data: report.suggestedPrompts.map((text, order) => ({ analysisId, order, text })),
-      });
-
-      await tx.designSession.update({
-        where: { id: sessionId },
-        data: {
-          latestAnalysisId: analysisId,
-          coverAssetId: assets[0]?.id ?? null,
-          goal,
-        },
-      });
+    await persistReport({
+      analysisId,
+      sessionId,
+      goal,
+      assets,
+      report,
+      scores,
+      iterationStatus: diff?.current ?? new Map(),
+      model: provider.model,
+      durationMs: Date.now() - startedAt,
     });
 
     emit({ type: "complete", sessionId, analysisId, iteration });

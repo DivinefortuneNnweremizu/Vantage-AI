@@ -1,10 +1,10 @@
-import { cookies } from "next/headers";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { DEV_NAME_COOKIE, DEV_SESSION_COOKIE, DEV_USER, isDevAuthEnabled, parseDevSession } from "@/features/auth/dev-auth";
+import { DEV_USER, isDevAuthEnabled } from "@/features/auth/dev-auth";
+import { readDevSession } from "@/features/auth/dev-session";
 import { ensureUserRecords } from "@/features/auth/ensure-user-records";
 
 export interface CurrentUser {
@@ -25,12 +25,10 @@ export const getSessionUser = cache(async (): Promise<CurrentUser | null> => {
   let identity: CurrentUser;
 
   if (isDevAuthEnabled()) {
-    const cookieStore = await cookies();
-    const session = parseDevSession(cookieStore.get(DEV_SESSION_COOKIE)?.value);
+    const session = await readDevSession();
     if (!session) return null;
     // A fresh sign-up has no name until onboarding saves one.
-    const name = cookieStore.get(DEV_NAME_COOKIE)?.value;
-    identity = { ...DEV_USER, fullName: name || (session === "new" ? null : DEV_USER.fullName) };
+    identity = { ...DEV_USER, fullName: session.name || (session.kind === "new" ? null : DEV_USER.fullName) };
   } else {
     const supabase = await createSupabaseServerClient();
     const {

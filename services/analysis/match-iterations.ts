@@ -14,6 +14,32 @@ export interface ComparableFinding {
   marker: { x: number; y: number } | null;
 }
 
+/** The fields of a saved finding that matter for comparing two reports. */
+interface StoredFinding {
+  id: string;
+  principleId: string;
+  valence: "LIKE" | "DISLIKE";
+  assetId: string | null;
+  markerX: number | null;
+  markerY: number | null;
+}
+
+/** The spot a saved finding points at, or null when it was not located on the design. */
+export function markerOf(finding: Pick<StoredFinding, "markerX" | "markerY">): { x: number; y: number } | null {
+  return finding.markerX !== null && finding.markerY !== null ? { x: finding.markerX, y: finding.markerY } : null;
+}
+
+/** Turns a saved finding into what the comparison needs. `assetOrder` maps asset id to page order. */
+export function fromStoredFinding(finding: StoredFinding, assetOrder: ReadonlyMap<string, number>): ComparableFinding {
+  return {
+    id: finding.id,
+    principleId: finding.principleId,
+    valence: finding.valence === "LIKE" ? "like" : "dislike",
+    assetOrder: finding.assetId ? (assetOrder.get(finding.assetId) ?? 0) : 0,
+    marker: markerOf(finding),
+  };
+}
+
 export type CurrentStatus = "NEW" | "PERSISTING";
 
 export interface IterationDiff {

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getOwnedSession } from "@/features/sessions/service";
-import { diffIterations, type ComparableFinding } from "@/services/analysis/match-iterations";
+import { diffIterations, fromStoredFinding, markerOf } from "@/services/analysis/match-iterations";
 import { CATEGORY_ORDER } from "@/services/ai/principles/library";
 import type { DimensionResult } from "@/services/analysis/scoring/rubric";
 
@@ -83,6 +83,69 @@ function lower<T extends string>(value: string): T {
   return value.toLowerCase() as T;
 }
 
+interface ScoredAnalysis {
+  overallScore: number | null;
+  intuitiveScore: number | null;
+  trustedScore: number | null;
+  valuableScore: number | null;
+}
+
+function scoreSetOf(analysis: ScoredAnalysis): ScoreSet {
+  return {
+    overall: analysis.overallScore ?? 0,
+    intuitive: analysis.intuitiveScore ?? 0,
+    trusted: analysis.trustedScore ?? 0,
+    valuable: analysis.valuableScore ?? 0,
+  };
+}
+
+/** What changed since the previous report: score movement, resolved problems, and what is new or still open. */
+async function buildComparison(params: {
+  sessionId: string;
+  previousIteration: number;
+  analysis: { assets: Array<{ assetId: string; order: number }>; findings: Parameters<typeof fromStoredFinding>[0][] };
+  scores: ScoreSet;
+  findings: ViewFinding[];
+}): Promise<IterationComparison | null> {
+  const { sessionId, previousIteration, analysis, scores, findings } = params;
+
+  const previous = await prisma.analysis.findUnique({
+    where: { sessionId_iteration: { sessionId, iteration: previousIteration } },
+    include: { findings: true, assets: true },
+  });
+  if (!previous) return null;
+
+  const orderOf = (links: Array<{ assetId: string; order: number }>) => new Map(links.map((link) => [link.assetId, link.order]));
+  const previousOrder = orderOf(previous.assets);
+  const currentOrder = orderOf(analysis.assets);
+
+  const diff = diffIterations(
+    previous.findings.map((finding) => fromStoredFinding(finding, previousOrder)),
+    analysis.findings.map((finding) => fromStoredFinding(finding, currentOrder)),
+  );
+
+  const previousFindingById = new Map(previous.findings.map((finding) => [finding.id, finding]));
+  const previousScores = scoreSetOf(previous);
+
+  return {
+    previousIteration,
+    previous: previousScores,
+    delta: {
+      overall: scores.overall - previousScores.overall,
+      intuitive: scores.intuitive - previousScores.intuitive,
+      trusted: scores.trusted - previousScores.trusted,
+      valuable: scores.valuable - previousScores.valuable,
+    },
+    resolved: diff.resolved.map((entry) => {
+      const original = previousFindingById.get(entry.id);
+      return { title: original?.title ?? "A previous issue", category: original?.category ?? "" };
+    }),
+    // Only problems count here. A strength that stays or appears is not an "open issue".
+    newCount: findings.filter((finding) => finding.valence === "dislike" && diff.current.get(finding.id) === "NEW").length,
+    persistingCount: findings.filter((finding) => finding.valence === "dislike" && diff.current.get(finding.id) === "PERSISTING").length,
+  };
+}
+
 /**
  * Loads everything the report tabs need in one place. Always scoped to the owner.
  * Returns null when the session has no completed report yet.
@@ -114,8 +177,6 @@ export async function getReportView(userId: string, sessionId: string, iteration
   });
   if (!analysis || analysis.status !== "COMPLETE") return null;
 
-  const assetOrderById = new Map(analysis.assets.map((link) => [link.assetId, link.order]));
-
   const findings: ViewFinding[] = analysis.findings
     .map<ViewFinding>((finding) => ({
       id: finding.id,
@@ -129,7 +190,7 @@ export async function getReportView(userId: string, sessionId: string, iteration
       observation: finding.observation,
       impact: finding.impact,
       confidence: lower(finding.confidence),
-      marker: finding.markerX !== null && finding.markerY !== null ? { x: finding.markerX, y: finding.markerY } : null,
+      marker: markerOf(finding),
       // RESOLVED is never stored on a finding. It is derived when two reports are compared.
       iterationStatus: finding.iterationStatus && finding.iterationStatus !== "RESOLVED" ? lower<"new" | "persisting">(finding.iterationStatus) : null,
     }))
@@ -140,80 +201,12 @@ export async function getReportView(userId: string, sessionId: string, iteration
       return category !== 0 ? category : a.title.localeCompare(b.title);
     });
 
-  const scores: ScoreSet = {
-    overall: analysis.overallScore ?? 0,
-    intuitive: analysis.intuitiveScore ?? 0,
-    trusted: analysis.trustedScore ?? 0,
-    valuable: analysis.valuableScore ?? 0,
-  };
+  const scores = scoreSetOf(analysis);
 
   const previousEntry = [...iterations].reverse().find((entry) => entry.iteration < wanted);
-  let comparison: IterationComparison | null = null;
-
-  if (previousEntry) {
-    const previous = await prisma.analysis.findUnique({
-      where: { sessionId_iteration: { sessionId, iteration: previousEntry.iteration } },
-      include: { findings: true, assets: true },
-    });
-
-    if (previous) {
-      const previousOrder = new Map(previous.assets.map((link) => [link.assetId, link.order]));
-      const toComparable = (
-        id: string,
-        principleId: string,
-        valence: "like" | "dislike",
-        assetId: string | null,
-        orderById: Map<string, number>,
-        marker: { x: number; y: number } | null,
-      ): ComparableFinding => ({
-        id,
-        principleId,
-        valence,
-        assetOrder: assetId ? (orderById.get(assetId) ?? 0) : 0,
-        marker,
-      });
-
-      const diff = diffIterations(
-        previous.findings.map((finding) =>
-          toComparable(
-            finding.id,
-            finding.principleId,
-            finding.valence === "LIKE" ? "like" : "dislike",
-            finding.assetId,
-            previousOrder,
-            finding.markerX !== null && finding.markerY !== null ? { x: finding.markerX, y: finding.markerY } : null,
-          ),
-        ),
-        findings.map((finding) => toComparable(finding.id, finding.principleId, finding.valence, finding.assetId, assetOrderById, finding.marker)),
-      );
-
-      const previousFindingById = new Map(previous.findings.map((finding) => [finding.id, finding]));
-      const previousScores: ScoreSet = {
-        overall: previous.overallScore ?? 0,
-        intuitive: previous.intuitiveScore ?? 0,
-        trusted: previous.trustedScore ?? 0,
-        valuable: previous.valuableScore ?? 0,
-      };
-
-      comparison = {
-        previousIteration: previousEntry.iteration,
-        previous: previousScores,
-        delta: {
-          overall: scores.overall - previousScores.overall,
-          intuitive: scores.intuitive - previousScores.intuitive,
-          trusted: scores.trusted - previousScores.trusted,
-          valuable: scores.valuable - previousScores.valuable,
-        },
-        resolved: diff.resolved.map((entry) => {
-          const original = previousFindingById.get(entry.id);
-          return { title: original?.title ?? "A previous issue", category: original?.category ?? "" };
-        }),
-        // Only problems count here. A strength that stays or appears is not an "open issue".
-        newCount: findings.filter((finding) => finding.valence === "dislike" && diff.current.get(finding.id) === "NEW").length,
-        persistingCount: findings.filter((finding) => finding.valence === "dislike" && diff.current.get(finding.id) === "PERSISTING").length,
-      };
-    }
-  }
+  const comparison = previousEntry
+    ? await buildComparison({ sessionId, previousIteration: previousEntry.iteration, analysis, scores, findings })
+    : null;
 
   const model = analysis.model ?? "unknown";
 

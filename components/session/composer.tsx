@@ -153,13 +153,13 @@ export function Composer({ firstName }: ComposerProps) {
           }}
         />
 
-        {/* Desktop: "+" on the left of the text. Hidden on mobile, where it moves below the text. */}
+        {/* One "+" and one image button. The grid moves them: beside the text on desktop, under it on mobile. */}
         <IconButton
           tone="inline"
           aria-label="Add images"
           onClick={openPicker}
           disabled={isBusy}
-          className="hidden sm:col-start-1 sm:row-start-1 sm:inline-flex"
+          className="col-start-1 row-start-2 size-11 sm:row-start-1 sm:size-9"
         >
           {addIcon}
         </IconButton>
@@ -175,30 +175,8 @@ export function Composer({ firstName }: ComposerProps) {
           placeholder="URL, Images or PDF asset"
           aria-describedby={message ? messageId : undefined}
           disabled={isBusy}
-          className="col-span-3 row-start-1 min-h-11 w-full bg-transparent px-1 text-base text-fg outline-none placeholder:text-fg-subtle sm:col-span-1 sm:col-start-2"
+          className="col-span-3 col-start-1 row-start-1 min-h-11 w-full bg-transparent px-1 text-base text-fg outline-none placeholder:text-fg-subtle sm:col-span-1 sm:col-start-2"
         />
-
-        {/* Desktop: choose-images icon on the right of the text. */}
-        <IconButton
-          tone="inline"
-          aria-label="Choose images from your files"
-          onClick={openPicker}
-          disabled={isBusy}
-          className="hidden sm:col-start-3 sm:row-start-1 sm:inline-flex"
-        >
-          <ImageIcon className="size-5" aria-hidden="true" />
-        </IconButton>
-
-        {/* Mobile: "+" at the bottom left, like ChatGPT. */}
-        <IconButton
-          tone="inline"
-          aria-label="Add images"
-          onClick={openPicker}
-          disabled={isBusy}
-          className="col-start-1 row-start-2 size-11 sm:hidden"
-        >
-          {addIcon}
-        </IconButton>
 
         {/* The two choices. Icon-only on mobile so they fit between the two buttons. */}
         <div className="col-start-2 row-start-2 flex min-w-0 items-center justify-center gap-3 overflow-x-auto sm:col-span-3 sm:col-start-1 sm:justify-between sm:overflow-visible">
@@ -220,13 +198,13 @@ export function Composer({ firstName }: ComposerProps) {
           />
         </div>
 
-        {/* Mobile: the primary round button at the bottom right, like ChatGPT's. */}
+        {/* On mobile this is the round primary button, like ChatGPT's. On desktop it is a plain icon. */}
         <IconButton
-          tone="primary"
+          tone="inline"
           aria-label="Choose images from your files"
           onClick={openPicker}
           disabled={isBusy}
-          className="col-start-3 row-start-2 size-11 sm:hidden"
+          className="col-start-3 row-start-2 size-11 bg-action text-on-action hover:bg-action-hover active:bg-action-pressed sm:row-start-1 sm:size-9 sm:bg-transparent sm:text-fg-muted sm:hover:bg-subtle"
         >
           <ImageIcon className="size-5" aria-hidden="true" />
         </IconButton>

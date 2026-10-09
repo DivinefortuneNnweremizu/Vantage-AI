@@ -1,14 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { safeRedirectPath } from "@/features/auth/redirect";
 
 /** Completes Supabase OAuth and email-confirmation redirects. */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get("code");
-  const requestedNext = searchParams.get("next") ?? "/";
-  // Only allow same-site relative redirects.
-  const next = requestedNext.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "/";
+  const next = safeRedirectPath(searchParams.get("next"));
 
   if (code) {
     const supabase = await createSupabaseServerClient();
