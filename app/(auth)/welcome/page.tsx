@@ -15,9 +15,9 @@ export default async function WelcomePage() {
   if (user.fullName && !isDevAuthEnabled()) redirect("/");
 
   return (
-    <div className="flex flex-col gap-6 text-center">
-      <div className="flex flex-col gap-2">
-        <h1 className="cv01 text-2xl font-semibold text-fg-strong">What should we call you?</h1>
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-3 text-center">
+        <h1 className="cv01 text-4xl font-semibold text-fg-strong">What should we call you?</h1>
         <p className="text-base text-fg-muted">We use your name to greet you. You can change it later.</p>
       </div>
       <AuthForm mode="onboarding" action={completeOnboardingAction} />

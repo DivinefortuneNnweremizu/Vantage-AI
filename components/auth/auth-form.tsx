@@ -17,8 +17,8 @@ interface AuthFormProps {
 
 const INITIAL_STATE: AuthFormState = { error: null, message: null };
 
-/** Pill-shaped fields and one wide button, as in ChatGPT's dialog. Labels are there for screen readers. */
-const pillInput = "min-h-12 rounded-full px-5 text-base shadow-none";
+/** Roomy rounded fields and one wide pill button, like Linktree's sign-up. Labels are there for screen readers. */
+const fieldClass = "min-h-14 rounded-lg px-4 text-base shadow-none";
 
 export function AuthForm({ mode, action, next }: AuthFormProps) {
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE);
@@ -27,7 +27,7 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
   const describedBy = state.error ? errorId : undefined;
 
   return (
-    <form action={formAction} className="flex flex-col gap-3" noValidate>
+    <form action={formAction} className="flex flex-col gap-4" noValidate>
       {next ? <input type="hidden" name="next" value={next} /> : null}
 
       {mode === "onboarding" ? (
@@ -41,7 +41,7 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
             defaultValue={state.fullName}
             autoComplete="name"
             placeholder="Full name"
-            className={pillInput}
+            className={fieldClass}
             required
             autoFocus
             aria-describedby={describedBy}
@@ -60,7 +60,7 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
               type="email"
               autoComplete="email"
               placeholder="Email address"
-              className={pillInput}
+              className={fieldClass}
               required
               autoFocus
               aria-describedby={describedBy}
@@ -77,7 +77,7 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
               type={showPassword ? "text" : "password"}
               autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
               placeholder="Password"
-              className={cn(pillInput, "pr-14")}
+              className={cn(fieldClass, "pr-14")}
               required
               aria-describedby={describedBy}
             />
@@ -100,7 +100,7 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
         {state.message ? <p className="text-sm text-success-fg">{state.message}</p> : null}
       </div>
 
-      <Button type="submit" isLoading={isPending} size="lg" className="min-h-12 w-full rounded-full">
+      <Button type="submit" isLoading={isPending} size="lg" className="min-h-14 w-full rounded-full">
         Continue
       </Button>
     </form>

@@ -535,13 +535,13 @@ Rules:
 
 ## Authentication screens (Log in, Sign up, Welcome)
 
-Minimal, modeled on ChatGPT's "Log in or sign up" dialog. Email and password only. No Google, Apple, or phone buttons.
+Modeled on Linktree's sign-up: a split screen. Email and password only. No Google, Apple, or phone buttons.
 
-- Layout: logo, then one centered card on `bg-canvas`. `max-w-[440px] rounded-3xl border border-line bg-surface px-6 py-8 shadow-md`.
-- Header: title `text-2xl font-semibold`, one muted sentence below. Centered.
-- Fields: pill inputs (`min-h-12 rounded-full px-5`), placeholders "Email address" and "Password", real labels kept as `sr-only`. The password field has a show/hide eye button.
-- One wide pill primary button: "Continue".
-- Footer link switches between Log in and Sign up.
+- Layout: two equal columns from `lg` up. Form on the left, a showcase panel on the right. Below `lg` the panel is hidden and only the form shows.
+- Left: logo top-left, then a centered column (`max-w-[420px]`) with the heading (`text-4xl font-semibold`, centered), one muted sentence, the form, and the switch link ("Don't have an account? Sign up"). A small privacy line sits at the bottom.
+- Fields: roomy rounded fields (`min-h-14 rounded-lg`), placeholders "Email address" and "Password", real labels kept as `sr-only`. The password field has a show/hide eye button. One wide pill primary button: "Continue".
+- Right panel (`AuthShowcase`): edge to edge, always dark (`night-950`) whatever the theme. Black, grey, and white with the project blue as the only color: a faint grid, two soft blue glows, a headline, a one-line promise, a hand-built example report (design with like and dislike markers, UX Score card, one finding card, marked "Example report"), and three short points. The picture is decorative and hidden from screen readers. The cards float gently, and not at all for reduced-motion users.
+- Never put invented numbers, user counts, or testimonials on this panel. The example report is labeled as an example.
 - Entry: a signed-out visitor with no account lands on Sign up, then onboarding. A returning visitor lands on Log in.
 - Onboarding (`/welcome`): shown once, right after the first sign-up, before New Session. One question, "What should we call you?", one field. Sign-up itself asks only for email and password.
 

@@ -58,6 +58,20 @@
   Analysis loader (the concentric rings shown while a report is being written).
   Colors come from the theme tokens. Reduced-motion users get static rings.
 */
+@keyframes vantage-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.showcase-float {
+  animation: vantage-float 7s ease-in-out infinite;
+}
+
 @keyframes vantage-orbit {
   to {
     transform: rotate(360deg);
