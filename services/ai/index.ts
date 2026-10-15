@@ -6,6 +6,8 @@ let provider: AiProvider | undefined;
 
 /**
  * Chooses the AI provider from AI_PROVIDER.
+ * When AI_PROVIDER is not set, a DEEPSEEK_API_KEY means "use DeepSeek". With neither, development
+ * uses the mock provider and production uses DeepSeek (which then says it is not set up).
  *
  * The mock provider returns invented reports. It is refused in production unless ALLOW_DEMO_AI=true,
  * so real users can never be shown made-up critiques by accident.
@@ -15,7 +17,7 @@ export function getAiProvider(): AiProvider {
 
   const isProduction = process.env.NODE_ENV === "production";
   // An empty value counts as unset, so a half-filled .env falls back to the safe default.
-  const wanted = process.env.AI_PROVIDER || (isProduction ? "deepseek" : "mock");
+  const wanted = process.env.AI_PROVIDER || (isProduction || process.env.DEEPSEEK_API_KEY ? "deepseek" : "mock");
 
   if (wanted === "mock") {
     if (isProduction && process.env.ALLOW_DEMO_AI !== "true") {

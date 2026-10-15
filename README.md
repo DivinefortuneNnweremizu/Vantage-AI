@@ -17,7 +17,8 @@ Read these first:
 | Re-analyzing a new version and comparing with the last | Built |
 | Assistant chat grounded in the report | Built |
 | Scoring from design standards, with the principle library | Built |
-| Demo AI (fixture reports, clearly labeled) | Built. **Real AI is not connected yet** |
+| Demo AI (fixture reports, clearly labeled) | Built |
+| Real AI analysis and assistant (DeepSeek, image input) | Built. **Needs a `DEEPSEEK_API_KEY`, and has not been tried against the live service yet** |
 | Email and password sign-up, log-in, and onboarding (Supabase) | Built, **not yet tested against a real Supabase project**. No Google or social sign-in for now |
 | Website URL, Figma, and PDF input | Not built |
 | Plans, checkout, and limits (Flutterwave) | Not built |
@@ -84,4 +85,4 @@ Edit `tokens/color-tokens.json`, then run `npm run tokens`. Never edit `tokens/d
 ## Connecting the real services later
 
 - **Supabase:** fill the three Supabase variables in `.env.local`, set `STORAGE_DRIVER=supabase`, create a private `designs` bucket, and remove `DEV_AUTH`.
-- **AI:** implement `analyze` and `chat` in `services/ai/providers/deepseek.ts`. Nothing else needs to change.
+- **AI:** put `DEEPSEEK_API_KEY=your-key` in `.env.local` and restart `npm run dev`. A key on its own selects DeepSeek. The model is `deepseek-flash` (it accepts images); set `DEEPSEEK_MODEL` to change it. To go back to demo reports, set `AI_PROVIDER=mock`. Reports made by DeepSeek are not labeled "Demo report". The designs you upload are sent to DeepSeek for analysis.

@@ -93,12 +93,13 @@ The weight of each standard per dimension is set in the rubric code and versione
 
 # Models
 
-- Provider: DeepSeek. The integration is planned and not yet built.
-- The analysis model must accept image input.
+- Provider: DeepSeek, model `deepseek-flash` (image input). Set by `DEEPSEEK_MODEL`, default in `services/ai/providers/deepseek.ts`.
+- The analysis model must accept image input. Images can only be sent in user messages, so instructions go in the system message.
 - A lighter model may handle titles, summaries, and classification.
 - Choose the model per task through the AI Service Layer, never in UI code.
 - Never send more context than a task requires.
-- Until the integration lands, use a mocked provider that returns schema-valid reports.
+- Prompts live in `services/ai/prompts.ts`. They carry the principle library, the report shape, and these rules. If a rule here changes, change the prompt.
+- Without a key, development uses the mocked provider that returns schema-valid reports.
 
 ---
 

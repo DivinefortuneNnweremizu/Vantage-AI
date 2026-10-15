@@ -36,8 +36,17 @@ describe("demo AI provider", () => {
   it("is the default outside production", async () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("AI_PROVIDER", "");
+    vi.stubEnv("DEEPSEEK_API_KEY", "");
     const { getAiProvider } = await import("@/services/ai");
     expect(getAiProvider().isDemo).toBe(true);
+  });
+
+  it("gives way to DeepSeek as soon as a key is set", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("AI_PROVIDER", "");
+    vi.stubEnv("DEEPSEEK_API_KEY", "test-key");
+    const { getAiProvider } = await import("@/services/ai");
+    expect(getAiProvider().id).toBe("deepseek");
   });
 
   it("is refused in production, so users are never shown invented reports", async () => {
@@ -56,14 +65,15 @@ describe("demo AI provider", () => {
     expect(getAiProvider().isDemo).toBe(true);
   });
 
-  it("defaults to the real provider in production, which refuses to invent content", async () => {
+  it("defaults to the real provider in production, which refuses to invent content without a key", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("AI_PROVIDER", "");
+    vi.stubEnv("DEEPSEEK_API_KEY", "");
     const { getAiProvider } = await import("@/services/ai");
     const provider = getAiProvider();
     expect(provider.id).toBe("deepseek");
     expect(provider.isDemo).toBe(false);
-    await expect(provider.analyze({} as never)).rejects.toThrow("not connected yet");
+    await expect(provider.analyze({} as never)).rejects.toThrow("not set up yet");
   });
 
   it("rejects an unknown provider name", async () => {
