@@ -18,13 +18,15 @@ interface GoalStepProps {
   coverName: string;
   pageCount: number;
   initialGoal: string;
+  /** True when analyzing sends the images to an outside AI provider. The person is told so before they start. */
+  imagesGoToAi: boolean;
 }
 
 type Phase = "form" | "running" | "failed";
 
 const GOAL_LIMIT = 600;
 
-export function GoalStep({ sessionId, coverAssetId, coverName, pageCount, initialGoal }: GoalStepProps) {
+export function GoalStep({ sessionId, coverAssetId, coverName, pageCount, initialGoal, imagesGoToAi }: GoalStepProps) {
   const router = useRouter();
   const [goal, setGoal] = useState(initialGoal);
   const [phase, setPhase] = useState<Phase>("form");
@@ -117,6 +119,11 @@ export function GoalStep({ sessionId, coverAssetId, coverName, pageCount, initia
             {goal.length}/{GOAL_LIMIT}
           </span>
         </p>
+        {imagesGoToAi ? (
+          <p className="text-xs text-fg-subtle">
+            Your design images are sent to our AI provider to be analyzed. Upload only designs you are happy to share.
+          </p>
+        ) : null}
       </form>
 
       {phase === "failed" && error ? (

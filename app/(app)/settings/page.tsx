@@ -37,7 +37,7 @@ export default async function SettingsPage() {
         <Card>
           <CardHeader title="Privacy" />
           <CardBody className="text-sm text-fg-muted">
-            Your uploaded designs and reports are private to you. Only you can open them. When you run an analysis, the design images are sent to our AI provider (DeepSeek) so they can be reviewed.
+            Your uploaded designs and reports are private to you. Only you can open them. When you run a real AI analysis, the design images are sent to our AI provider so they can be reviewed. Demo reports send nothing.
           </CardBody>
         </Card>
       </div>

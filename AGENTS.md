@@ -164,9 +164,9 @@ The stack is inherited from the Design.md Generator project for consistency acro
 ## AI
 
 - Provider accessed only through the AI Service Layer (`services/ai/`).
-- Provider: DeepSeek (`services/ai/providers/deepseek.ts`), model `deepseek-flash`, which accepts images. It needs `DEEPSEEK_API_KEY`.
+- Providers: Gemini (`services/ai/providers/gemini.ts`, free tier, `GEMINI_API_KEY`) and DeepSeek (`deepseek.ts`, `DEEPSEEK_API_KEY`). Both use the shared `openai-compatible.ts`. Models: `gemini-3.8-flash` and `deepseek-flash`, which accept images.
 - The analysis model must support image input.
-- With no key, development uses the mocked provider that returns schema-valid reports. A key on its own selects DeepSeek.
+- With no key, development uses the mocked provider that returns schema-valid reports. A key on its own selects its provider (Gemini first). Real analyses are capped per person and per day (`services/analysis/choose-provider.ts`); past a cap, or at a provider limit, the person gets a labeled demo report.
 
 Responsibilities:
 
@@ -313,7 +313,7 @@ Workflows are implementation recipes. Follow them exactly once they exist.
 | Upload images, Single Page and Journey | Built |
 | Analysis pipeline, scoring, Sentiment Map, recommendations, assistant | Built against the demo provider |
 | Iteration comparison | Built |
-| Real AI (DeepSeek) | Built and unit-tested with a mocked network. **Not yet tried against the live service.** Needs `DEEPSEEK_API_KEY`. The demo provider stays labeled and is refused in production |
+| Real AI (Gemini, DeepSeek) | Built, unit-tested, and run end to end against a fake Gemini endpoint. **Not yet tried against a live service.** Needs `GEMINI_API_KEY` or `DEEPSEEK_API_KEY`. The demo provider stays labeled and is refused in production |
 | Supabase sign-in and storage | Written, **not yet tested** against a real project |
 | Website URL, Figma link, and PDF input | **Not built.** The composer says so when a link is pasted |
 | Plans, checkout, and limits | **Not built.** Entitlements are placeholders in `features/billing/plans.ts` |
@@ -493,7 +493,7 @@ When implementation options are equal, choose the one that improves these metric
 Items marked **Open** are not decided. Do not build around a guess. Ask the maintainer.
 
 1. **Plan limits. Open.** The maintainer will define what Free includes versus VantagePro.
-2. **Vision model. Decided.** DeepSeek powers analysis (`deepseek-flash`, image input). Everything stays behind `services/ai/`, and the mocked provider remains for development and tests.
+2. **Vision model. Decided.** Gemini (free tier, for trials and the portfolio) or DeepSeek power analysis, both with image input. Everything stays behind `services/ai/`, and the mocked provider remains for development and tests.
 3. **Scoring method. Decided.** Scores are calculated against established design standards: Jakob Nielsen's usability heuristics, Jakob's Law and the other Laws of UX, Gestalt principles, WCAG 2.1 AA, and platform guidelines. See the Scoring Standards section in `.agents/rules/ai-behavior.md`.
 4. **Figma access. Decided.** Support both: pasting a Figma link, and connecting a Figma account with OAuth for private files.
 5. **Dark mode. Decided and tokenized.** Dark tokens were translated from the maintainer's Figma file and live in `tokens/color-tokens.json` under `color.dark`. Components use theme-aware utilities so they switch automatically. See the Dark Mode section of `design.md`.

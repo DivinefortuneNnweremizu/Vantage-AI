@@ -93,7 +93,9 @@ The weight of each standard per dimension is set in the rubric code and versione
 
 # Models
 
-- Provider: DeepSeek, model `deepseek-flash` (image input). Set by `DEEPSEEK_MODEL`, default in `services/ai/providers/deepseek.ts`.
+- Providers: Gemini (`gemini-3.8-flash`, set by `GEMINI_MODEL`) and DeepSeek (`deepseek-flash`, set by `DEEPSEEK_MODEL`). Both take image input and share `services/ai/providers/openai-compatible.ts`.
+- Real analyses are capped per person and per day. Past a cap, or when a provider is at its limit, the analysis becomes a labeled demo report where demo reports are allowed. Never fall back silently: the report must say it is a demo.
+- Free tiers may use submitted content to improve the provider's products. The app tells people before they analyze that their images are sent to the provider.
 - The analysis model must accept image input. Images can only be sent in user messages, so instructions go in the system message.
 - A lighter model may handle titles, summaries, and classification.
 - Choose the model per task through the AI Service Layer, never in UI code.

@@ -6,6 +6,7 @@ import { GoalStep } from "@/components/session/goal-step";
 import { requireCurrentUser } from "@/features/auth/get-current-user";
 import { listPendingAssets } from "@/features/sessions/assets";
 import { loadOwnedSessionOrNotFound } from "@/features/sessions/page-helpers";
+import { sendsImagesToProvider } from "@/services/ai";
 
 export const metadata: Metadata = { title: "My Goal" };
 
@@ -33,6 +34,7 @@ export default async function GoalPage({ params }: GoalPageProps) {
         coverName={first.originalName}
         pageCount={assets.length}
         initialGoal={session.goal ?? ""}
+        imagesGoToAi={sendsImagesToProvider()}
       />
     </div>
   );

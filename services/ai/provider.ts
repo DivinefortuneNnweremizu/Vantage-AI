@@ -64,6 +64,14 @@ export interface AiProvider {
   chat(input: ChatInput): AsyncIterable<string>;
 }
 
+/** The provider is at its usage limit (rate limit or free quota) right now. Trying again later can work. */
+export class ProviderQuotaError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ProviderQuotaError";
+  }
+}
+
 export class AiProviderUnavailableError extends Error {
   constructor(message: string) {
     super(message);

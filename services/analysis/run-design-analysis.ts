@@ -3,8 +3,8 @@ import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { STAGE_LABELS, type AnalysisEvent, type AnalysisProgressStage } from "@/features/analysis/schemas";
 import { getOwnedSession } from "@/features/sessions/service";
-import { getAiProvider } from "@/services/ai";
-import { AiProviderUnavailableError, type AiProvider, type AnalyzeInput } from "@/services/ai/provider";
+import { AiProviderUnavailableError, ProviderQuotaError, type AiProvider, type AnalyzeInput } from "@/services/ai/provider";
+import { chooseProvider, demoFallbackOrNull } from "@/services/analysis/choose-provider";
 import { diffIterations, fromStoredFinding, type ComparableFinding } from "@/services/analysis/match-iterations";
 import { persistReport } from "@/services/analysis/persist-report";
 import { computeScores } from "@/services/analysis/scoring/rubric";
@@ -107,6 +107,31 @@ async function requestValidatedReport(
   }
 }
 
+/** Asks the provider for a report. The provider call is one request, so the middle stages advance on a timer while it runs. */
+async function produceReport(
+  provider: AiProvider,
+  input: AnalyzeInput,
+  context: { assetCount: number; platform: OwnedSession["platform"] },
+  analysisId: string,
+  stage: (value: AnalysisProgressStage) => void,
+): Promise<ValidatedReport> {
+  const middleStages: AnalysisProgressStage[] = ["hierarchy", "accessibility", "interaction"];
+  let nextStage = 0;
+  const ticker = setInterval(() => {
+    const value = middleStages[nextStage];
+    if (value) {
+      stage(value);
+      nextStage += 1;
+    }
+  }, provider.isDemo ? 900 : 5000);
+
+  try {
+    return await requestValidatedReport(provider, input, context, analysisId);
+  } finally {
+    clearInterval(ticker);
+  }
+}
+
 /**
  * Runs one full analysis for a session the user owns. See .agents/workflows/run-analysis.md.
  *
@@ -119,6 +144,8 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
 
   const session = await getOwnedSession(userId, sessionId);
   const assets = await loadPendingAssets(session);
+  // Chosen before anything is saved: past the daily cap this may switch to a demo report, or refuse.
+  let provider = await chooseProvider(userId);
 
   const goal = params.goal !== undefined ? params.goal.trim() || null : session.goal;
 
@@ -158,8 +185,6 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
       .catch(() => logger.error("Could not mark an analysis as failed", { analysisId }));
   };
 
-  const provider = getAiProvider();
-  const stageGapMs = provider.isDemo ? 350 : 0;
   const stage = (value: AnalysisProgressStage): void => emit({ type: "progress", stage: value, label: STAGE_LABELS[value] });
 
   try {
@@ -187,24 +212,22 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
       })),
     };
 
-    // The provider call is one request, so the middle stages advance on a timer while it runs.
-    const middleStages: AnalysisProgressStage[] = ["hierarchy", "accessibility", "interaction"];
-    let nextStage = 0;
-    const ticker = setInterval(() => {
-      const value = middleStages[nextStage];
-      if (value) {
-        stage(value);
-        nextStage += 1;
-      }
-    }, provider.isDemo ? 900 : 5000);
+    const context = { assetCount: assets.length, platform: session.platform };
+    const produce = (using: AiProvider) => produceReport(using, input, context, analysisId, stage);
 
     let report: ValidatedReport;
     try {
-      report = await requestValidatedReport(provider, input, { assetCount: assets.length, platform: session.platform }, analysisId);
-    } finally {
-      clearInterval(ticker);
+      report = await produce(provider);
+    } catch (error) {
+      // The real provider is at its limit. Give a clearly labeled demo report if that is allowed.
+      const demo = error instanceof ProviderQuotaError ? demoFallbackOrNull() : null;
+      if (!demo) throw error;
+      logger.warn("The AI provider is at its limit, using a demo report", { analysisId });
+      provider = demo;
+      report = await produce(provider);
     }
 
+    const stageGapMs = provider.isDemo ? 350 : 0;
     stage("scoring");
     await sleep(stageGapMs);
     const scores = computeScores(
@@ -261,6 +284,10 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
     if (error instanceof AiProviderUnavailableError) {
       await markFailed("The AI provider is not connected.");
       throw new AppError("INTERNAL_ERROR", error.message);
+    }
+    if (error instanceof ProviderQuotaError) {
+      await markFailed("The AI provider was at its limit.");
+      throw new AppError("RATE_LIMITED", "The AI service is busy right now. Try again in a little while.");
     }
     if (error instanceof AppError) {
       await markFailed(error.message);

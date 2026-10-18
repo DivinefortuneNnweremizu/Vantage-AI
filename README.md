@@ -18,7 +18,8 @@ Read these first:
 | Assistant chat grounded in the report | Built |
 | Scoring from design standards, with the principle library | Built |
 | Demo AI (fixture reports, clearly labeled) | Built |
-| Real AI analysis and assistant (DeepSeek, image input) | Built. **Needs a `DEEPSEEK_API_KEY`, and has not been tried against the live service yet** |
+| Real AI analysis and assistant (Gemini or DeepSeek, image input) | Built. **Needs an API key, and has not been tried against a live service yet.** Tested end to end against a fake Gemini endpoint |
+| Daily caps on real analyses, with a labeled demo report past the cap | Built |
 | Email and password sign-up, log-in, and onboarding (Supabase) | Built, **not yet tested against a real Supabase project**. No Google or social sign-in for now |
 | Website URL, Figma, and PDF input | Not built |
 | Plans, checkout, and limits (Flutterwave) | Not built |
@@ -85,4 +86,5 @@ Edit `tokens/color-tokens.json`, then run `npm run tokens`. Never edit `tokens/d
 ## Connecting the real services later
 
 - **Supabase:** fill the three Supabase variables in `.env.local`, set `STORAGE_DRIVER=supabase`, create a private `designs` bucket, and remove `DEV_AUTH`.
-- **AI:** put `DEEPSEEK_API_KEY=your-key` in `.env.local` and restart `npm run dev`. A key on its own selects DeepSeek. The model is `deepseek-flash` (it accepts images); set `DEEPSEEK_MODEL` to change it. To go back to demo reports, set `AI_PROVIDER=mock`. Reports made by DeepSeek are not labeled "Demo report". The designs you upload are sent to DeepSeek for analysis.
+- **AI:** put `GEMINI_API_KEY=your-key` in `.env.local` (a free key from Google AI Studio works) and restart `npm run dev`. A Gemini key on its own selects Gemini, and a `DEEPSEEK_API_KEY` selects DeepSeek if there is no Gemini key. `AI_PROVIDER` (`gemini`, `deepseek`, or `mock`) overrides that. `GEMINI_MODEL` defaults to `gemini-3.8-flash`; `gemini-3.5-flash-lite` is lighter. Reports from a real provider are not labeled "Demo report", and the designs you upload are sent to that provider.
+- **Free-tier caps:** real analyses are limited to `REAL_AI_PER_USER_PER_DAY` per person (default 3) and `REAL_AI_PER_DAY` across the site (default 50), counted over 24 hours. Past a cap, or when the provider says it is at its limit, the person gets a labeled demo report. In production that needs `ALLOW_DEMO_AI=true`; without it they see a "come back tomorrow" message.
