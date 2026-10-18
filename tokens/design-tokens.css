@@ -56,7 +56,12 @@
   --color-night-900: #222222;
   --color-night-925: #1E1F20;
   --color-night-950: #131314;
-  --color-primary-night-container: #262254;
+  --color-night-200: #E0E0E0;
+  --color-navy-900: #0F2235;
+  --color-lavender-100: #BFBFF0;
+  --color-lavender-300: #9494FF;
+  --color-lavender-500: #7A7AF0;
+  --color-indigo-500: #4C4CF1;
   --color-primary-night-ring: #2A246E;
   --color-success-night-bg: #183423;
   --color-success-night-fg: #5CAC77;
@@ -131,6 +136,10 @@
   --color-action-hover: var(--primary-hover-color);
   --color-action-pressed: var(--primary-pressed-color);
   --color-on-action: var(--on-primary-color);
+  --color-btn: var(--button-color);
+  --color-btn-hover: var(--button-hover-color);
+  --color-btn-pressed: var(--button-pressed-color);
+  --color-on-btn: var(--on-button-color);
   --color-canvas: var(--background-color);
   --color-surface: var(--surface-color);
   --color-hover: var(--hover-color);
@@ -147,9 +156,16 @@
   --color-line-strong: var(--border-strong-color);
   --color-divider: var(--divider-color);
   --color-accent: var(--accent-color);
-  --color-selected: var(--primary-container-color);
-  --color-selected-line: var(--primary-container-border-color);
-  --color-on-selected: var(--on-primary-container-color);
+  --color-selected: var(--selected-color);
+  --color-selected-line: var(--selected-border-color);
+  --color-on-selected: var(--on-selected-color);
+  --color-tab-active: var(--tab-active-color);
+  --color-on-tab-active: var(--on-tab-active-color);
+  --color-chip: var(--chip-color);
+  --color-on-chip: var(--on-chip-color);
+  --color-toggle: var(--toggle-color);
+  --color-session-active: var(--session-active-color);
+  --color-fg-label: var(--text-label-color);
   --color-focus: var(--focus-ring-color);
   --color-success-bg: var(--success-container-color);
   --color-success-fg: var(--on-success-container-color);
@@ -169,15 +185,26 @@
    ========================================================================== */
 :root,
 [data-theme="light"] {
+  --button-color: var(--color-black);
+  --button-hover-color: var(--color-night-900);
+  --button-pressed-color: var(--color-night-800);
+  --on-button-color: var(--color-white);
   --primary-color: var(--color-primary-500);
   --primary-hover-color: var(--color-primary-600);
   --primary-pressed-color: var(--color-primary-700);
   --on-primary-color: var(--color-white);
   --primary-emphasis-color: var(--color-primary-400);
   --primary-soft-color: var(--color-primary-300);
-  --primary-container-color: var(--color-primary-50);
-  --primary-container-border-color: var(--color-primary-75);
-  --on-primary-container-color: var(--color-grey-900);
+  --selected-color: var(--color-grey-100);
+  --selected-border-color: var(--color-grey-300);
+  --on-selected-color: var(--color-grey-900);
+  --tab-active-color: var(--color-black);
+  --on-tab-active-color: var(--color-white);
+  --chip-color: var(--color-lavender-500);
+  --on-chip-color: var(--color-black);
+  --toggle-color: var(--color-lavender-300);
+  --session-active-color: var(--color-grey-100);
+  --text-label-color: var(--color-grey-500);
   --focus-ring-color: var(--color-primary-50);
   --focus-outline-color: var(--color-primary-500);
   --background-color: var(--color-grey-50);
@@ -212,9 +239,9 @@
   --on-error-container-color: var(--color-error-700);
   --accent-color: var(--color-primary-500);
   --hover-color: var(--color-grey-50);
-  --chart-1-color: var(--color-primary-500);
-  --chart-2-color: var(--color-primary-300);
-  --chart-3-color: var(--color-primary-75);
+  --chart-1-color: var(--color-lavender-300);
+  --chart-2-color: var(--color-indigo-500);
+  --chart-3-color: var(--color-lavender-100);
 
   /* --- MOTION DURATIONS --- */
   --duration-fast: 150ms;
@@ -226,15 +253,26 @@
    Translated from the Vantage AI Figma file. Primary stays #3929CE.
    ========================================================================== */
 [data-theme="dark"] {
+  --button-color: var(--color-white);
+  --button-hover-color: var(--color-night-150);
+  --button-pressed-color: var(--color-night-300);
+  --on-button-color: var(--color-black);
   --primary-color: var(--color-primary-500);
   --primary-hover-color: var(--color-primary-400);
   --primary-pressed-color: var(--color-primary-600);
   --on-primary-color: var(--color-white);
   --primary-emphasis-color: var(--color-primary-400);
   --primary-soft-color: var(--color-primary-300);
-  --primary-container-color: var(--color-primary-night-container);
-  --primary-container-border-color: var(--color-primary-400);
-  --on-primary-container-color: var(--color-night-150);
+  --selected-color: var(--color-night-800);
+  --selected-border-color: var(--color-night-700);
+  --on-selected-color: var(--color-night-150);
+  --tab-active-color: var(--color-night-200);
+  --on-tab-active-color: var(--color-navy-900);
+  --chip-color: var(--color-lavender-500);
+  --on-chip-color: var(--color-black);
+  --toggle-color: var(--color-lavender-300);
+  --session-active-color: var(--color-black);
+  --text-label-color: var(--color-night-600);
   --focus-ring-color: var(--color-primary-night-ring);
   --focus-outline-color: var(--color-primary-300);
   --accent-color: var(--color-primary-300);
@@ -269,23 +307,34 @@
   --on-error-color: var(--color-white);
   --error-container-color: var(--color-error-night-bg);
   --on-error-container-color: var(--color-error-night-fg);
-  --chart-1-color: var(--color-primary-300);
-  --chart-2-color: var(--color-primary-400);
-  --chart-3-color: var(--color-primary-75);
+  --chart-1-color: var(--color-lavender-300);
+  --chart-2-color: var(--color-indigo-500);
+  --chart-3-color: var(--color-lavender-100);
 }
 
 /* Follow the system preference unless the user explicitly chose light. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    --button-color: var(--color-white);
+    --button-hover-color: var(--color-night-150);
+    --button-pressed-color: var(--color-night-300);
+    --on-button-color: var(--color-black);
     --primary-color: var(--color-primary-500);
     --primary-hover-color: var(--color-primary-400);
     --primary-pressed-color: var(--color-primary-600);
     --on-primary-color: var(--color-white);
     --primary-emphasis-color: var(--color-primary-400);
     --primary-soft-color: var(--color-primary-300);
-    --primary-container-color: var(--color-primary-night-container);
-    --primary-container-border-color: var(--color-primary-400);
-    --on-primary-container-color: var(--color-night-150);
+    --selected-color: var(--color-night-800);
+    --selected-border-color: var(--color-night-700);
+    --on-selected-color: var(--color-night-150);
+    --tab-active-color: var(--color-night-200);
+    --on-tab-active-color: var(--color-navy-900);
+    --chip-color: var(--color-lavender-500);
+    --on-chip-color: var(--color-black);
+    --toggle-color: var(--color-lavender-300);
+    --session-active-color: var(--color-black);
+    --text-label-color: var(--color-night-600);
     --focus-ring-color: var(--color-primary-night-ring);
     --focus-outline-color: var(--color-primary-300);
     --accent-color: var(--color-primary-300);
@@ -320,8 +369,8 @@
     --on-error-color: var(--color-white);
     --error-container-color: var(--color-error-night-bg);
     --on-error-container-color: var(--color-error-night-fg);
-    --chart-1-color: var(--color-primary-300);
-    --chart-2-color: var(--color-primary-400);
-    --chart-3-color: var(--color-primary-75);
+    --chart-1-color: var(--color-lavender-300);
+    --chart-2-color: var(--color-indigo-500);
+    --chart-3-color: var(--color-lavender-100);
   }
 }

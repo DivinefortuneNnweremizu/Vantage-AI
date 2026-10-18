@@ -23,7 +23,7 @@ export function Toggle({ checked, onCheckedChange, label }: ToggleProps) {
         className={cn(
           "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-          checked ? "bg-accent" : "bg-line-strong",
+          checked ? "bg-toggle" : "bg-line-strong",
         )}
       >
         <span

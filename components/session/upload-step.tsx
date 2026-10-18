@@ -207,7 +207,7 @@ export function UploadStep({ sessionId, pageScope, assets, maxPages, skipped }: 
                   aria-label={`Page ${index + 1}: ${asset.name}`}
                   className={cn(
                     "block h-32 w-28 overflow-hidden rounded-xl border-2 bg-subtle transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-                    isSelected ? "border-accent" : "border-line hover:border-line-strong",
+                    isSelected ? "border-fg-strong" : "border-line hover:border-line-strong",
                   )}
                 >
                   <AssetImage assetId={asset.id} size="thumb" alt="" className="size-full object-cover object-top" />

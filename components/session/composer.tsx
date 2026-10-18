@@ -204,7 +204,7 @@ export function Composer({ firstName }: ComposerProps) {
           aria-label="Choose images from your files"
           onClick={openPicker}
           disabled={isBusy}
-          className="col-start-3 row-start-2 size-11 bg-action text-on-action hover:bg-action-hover active:bg-action-pressed sm:row-start-1 sm:size-9 sm:bg-transparent sm:text-fg-muted sm:hover:bg-subtle"
+          className="col-start-3 row-start-2 size-11 bg-btn text-on-btn hover:bg-btn-hover active:bg-btn-pressed sm:row-start-1 sm:size-9 sm:bg-transparent sm:text-fg-muted sm:hover:bg-subtle"
         >
           <ImageIcon className="size-5" aria-hidden="true" />
         </IconButton>

@@ -23,15 +23,15 @@ export function AnalysisLoader({ stage }: AnalysisLoaderProps) {
           <svg viewBox="0 0 200 200" className="absolute inset-0 size-full" fill="none">
             <circle cx="100" cy="100" r="92" stroke="var(--border-color)" strokeWidth="1" />
             <g className="loader-orbit" style={{ transformOrigin: "100px 100px" }}>
-              <circle cx="100" cy="100" r="92" stroke="var(--accent-color)" strokeWidth="2" strokeLinecap="round" strokeDasharray="60 520" />
+              <circle cx="100" cy="100" r="92" stroke="var(--text-strong-color)" strokeWidth="2" strokeLinecap="round" strokeDasharray="60 520" />
             </g>
             <g className="loader-orbit-slow" style={{ transformOrigin: "100px 100px" }}>
-              <circle cx="100" cy="100" r="74" stroke="var(--primary-soft-color)" strokeWidth="2" strokeLinecap="round" strokeDasharray="40 430" />
+              <circle cx="100" cy="100" r="74" stroke="var(--text-tertiary-color)" strokeWidth="2" strokeLinecap="round" strokeDasharray="40 430" />
             </g>
             <circle cx="100" cy="100" r="74" stroke="var(--border-color)" strokeWidth="1" />
           </svg>
           <div className="loader-core absolute inset-[34%] rounded-full bg-selected" />
-          <div className="loader-scan absolute inset-x-0 top-1/2 h-px bg-accent" />
+          <div className="loader-scan absolute inset-x-0 top-1/2 h-px bg-fg-strong" />
         </div>
 
         <div role="status" aria-live="polite" className="flex flex-col items-center gap-2 text-center">
@@ -56,11 +56,11 @@ export function AnalysisLoader({ stage }: AnalysisLoaderProps) {
               <span
                 className={cn(
                   "flex size-6 shrink-0 items-center justify-center rounded-full border",
-                  isDone ? "border-accent bg-accent text-surface" : isCurrent ? "border-accent" : "border-line-strong",
+                  isDone ? "border-fg-strong bg-fg-strong text-surface" : isCurrent ? "border-fg-strong" : "border-line-strong",
                 )}
               >
                 {isDone ? <Check className="size-3.5" aria-hidden="true" /> : null}
-                {isCurrent ? <span className="size-2.5 rounded-full bg-accent" /> : null}
+                {isCurrent ? <span className="size-2.5 rounded-full bg-fg-strong" /> : null}
               </span>
               {STAGE_LABELS[item].replace("...", "")}
               <span className="sr-only">{isDone ? ", done" : isCurrent ? ", in progress" : ", waiting"}</span>

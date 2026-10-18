@@ -80,9 +80,9 @@ export function SegmentedControl<T extends string>({
               iconOnlyOnMobile ? "min-w-11 justify-center sm:min-w-0" : "",
               selected
                 ? emphasis === "strong"
-                  ? "border-action bg-action text-on-action"
+                  ? "border-transparent bg-chip text-on-chip"
                   : "border-selected-line bg-selected text-on-selected"
-                : "border-line-strong bg-subtle text-fg-heading hover:bg-subtle-hover",
+                : "border-transparent text-fg-heading hover:bg-subtle",
             )}
           >
             {option.icon}

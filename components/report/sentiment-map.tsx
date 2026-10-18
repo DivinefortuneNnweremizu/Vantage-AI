@@ -194,14 +194,13 @@ export function SentimentMap({ title, assets, findings }: SentimentMapProps) {
                     </p>
                     {finding.marker !== null ? (
                       <div>
-                        {/* Styled as a real button (border, fill, icon) so it is clear that it can be clicked. */}
+                        {/* A solid black and white button with an icon, so it is clear that it can be clicked. */}
                         <Button
-                          variant="secondary"
                           aria-label={`Show ${finding.title} on the design`}
                           onClick={() => backToMarker(finding.id)}
-                          className="mt-1 min-h-11 border-accent bg-selected text-on-selected hover:bg-hover"
+                          className="mt-1 min-h-11"
                         >
-                          <Crosshair className="size-4 text-accent" aria-hidden="true" />
+                          <Crosshair className="size-4" aria-hidden="true" />
                           Show on design
                         </Button>
                       </div>

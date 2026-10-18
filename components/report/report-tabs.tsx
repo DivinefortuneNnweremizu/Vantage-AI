@@ -67,11 +67,15 @@ export function ReportTabs({ sessionId, active, iteration }: ReportTabsProps) {
               }
             }}
             className={cn(
-              "flex min-h-11 shrink-0 items-center gap-2 rounded-lg border px-3 text-base font-medium whitespace-nowrap transition-colors",
+              "flex min-h-11 shrink-0 items-center gap-2 border border-transparent px-3 text-base font-medium whitespace-nowrap transition-colors",
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+              // As in the Figma file: the selected Assistant tab is the lavender chip, the others are light grey.
+              tab.id === "assistant" ? "rounded-xl" : "rounded-[14px]",
               isActive
-                ? "border-selected-line bg-selected text-on-selected"
-                : "border-transparent text-fg-muted hover:bg-hover hover:text-fg",
+                ? tab.id === "assistant"
+                  ? "bg-chip text-on-chip"
+                  : "bg-tab-active text-on-tab-active"
+                : "text-fg-muted hover:bg-hover hover:text-fg",
             )}
           >
             {tab.id === "assistant" ? <Sparkles className="size-5" aria-hidden="true" /> : null}

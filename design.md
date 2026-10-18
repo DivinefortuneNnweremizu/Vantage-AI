@@ -166,7 +166,7 @@ Built from **#3929CE**. Each step mirrors the offset the reference product uses 
 | `primary-75` | `#CBC6F6` | `#FCD2C2` | Selected tab border |
 | `primary-300` | `#877CEB` | `#FA9874` | Soft accent bars, secondary chart series, event markers |
 | `primary-400` | `#4D3CDF` | `#F56630` | Count badges, icon accents |
-| `primary-500` | `#3929CE` | `#EB5017` | **Base.** Primary buttons, focus border and outline, unread dot, link hover text, toggle on |
+| `primary-500` | `#3929CE` | `#EB5017` | **Base.** Focus border and outline, unread dot, link hover text, toggle on, the selected Likes/Dislikes and Page choices. Buttons are black and white, not blue |
 | `primary-600` | `#3022B8` | `#D4440F` | **Hover** for primary buttons and primary filled elements |
 | `primary-700` | `#2A1EA2` | none | **Pressed / active** for primary buttons. Added by continuing the same hover step once more |
 
@@ -250,9 +250,15 @@ Use scale utilities such as `bg-primary-400` or `bg-success-600` only for colors
 | `active:bg-action-pressed` | `--primary-pressed-color` | `primary-700` | `primary-600` | Primary pressed |
 | `text-on-action` | `--on-primary-color` | `white` | `white` | Text on primary |
 | `text-accent` / `bg-accent` / `outline-accent` | `--accent-color` | `primary-500` | `primary-300` #877CEB | Link hover, toggle on, focus outline, unread dot |
-| `bg-selected` | `--primary-container-color` | `primary-50` | `primary-night-container` #262254 | Active nav, selected tab and segment, user chat bubble |
-| `border-selected-line` | `--primary-container-border-color` | `primary-75` | `primary-400` | Selected tab border |
-| `text-on-selected` | `--on-primary-container-color` | `grey-900` | `night-150` | Text on selected surfaces |
+| `bg-selected` | `--selected-color` | `grey-100` | `night-800` #373737 | Neutral grey: selected composer choice, user chat bubble, highlighted finding |
+| `border-selected-line` | `--selected-border-color` | `grey-300` | `night-700` #474747 | Border of those surfaces |
+| `text-on-selected` | `--on-selected-color` | `grey-900` | `night-150` | Text on those surfaces |
+| `bg-tab-active` / `text-on-tab-active` | tab roles | `black` / `white` | `night-200` #E0E0E0 / `navy-900` #0F2235 | Selected report tab. Light grey with dark text in the Figma file |
+| `bg-chip` / `text-on-chip` | chip roles | `lavender-500` #7A7AF0 / `black` | same | Selected Likes/Dislikes and Page choices, and the selected Assistant tab. Figma uses white text, which is only 3.6:1, so the text is black for 5.9:1 |
+| `bg-toggle` | `--toggle-color` | `lavender-300` #9494FF | same | The View Maps switch when on |
+| `bg-session-active` | `--session-active-color` | `grey-100` | `black` | The open session in the sidebar |
+| `text-fg-label` | `--text-label-color` | `grey-500` | `night-600` #6B6C6E | Large grey headings and recommendation titles (large text only: 3.5:1) |
+| `bg-chart-1` / `-2` / `-3` | chart roles | `lavender-300` / `indigo-500` #4C4CF1 / `lavender-100` #BFBFF0 | same | Intuitive, Trusted, Valuable score colors, from Figma |
 | `ring-focus` | `--focus-ring-color` | `primary-50` | `primary-night-ring` #2A246E | Input focus ring |
 | `bg-success-bg` / `text-success-fg` | success container roles | `success-50` / `success-700` | #183423 / #5CAC77 | Success badges |
 | `bg-warning-bg` / `text-warning-fg` | warning container roles | `warning-50` / `warning-700` | #403320 / #D0A86D | Warning badges |
@@ -502,7 +508,7 @@ focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acc
 
 | Variant | Classes |
 |---------|---------|
-| Primary | `bg-action text-on-action hover:bg-action-hover active:bg-action-pressed` |
+| Primary | `bg-btn text-on-btn hover:bg-btn-hover active:bg-btn-pressed`. Black with white text in light mode, white with black text in dark mode, as in the Figma file. Not blue. |
 | Secondary | `border border-line-strong bg-surface text-fg-heading hover:bg-hover` |
 | Destructive | `bg-error-500 text-white hover:bg-error-700` |
 | Icon button | `size-10 rounded-full bg-subtle hover:bg-subtle-hover` (header) or `size-9 rounded-full hover:bg-subtle` (inline) |

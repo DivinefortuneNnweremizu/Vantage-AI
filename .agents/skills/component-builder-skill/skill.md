@@ -148,7 +148,7 @@ Use Tailwind scale utilities in JSX. Use role variables in CSS and SVG.
 Good:
 
 ```tsx
-<button className="bg-action text-on-action hover:bg-action-hover active:bg-action-pressed" />
+<button className="bg-btn text-on-btn hover:bg-btn-hover active:bg-btn-pressed" />
 <div className="rounded-xl border border-line bg-surface" />
 <p className="text-sm text-fg-muted" />
 ```
@@ -180,7 +180,7 @@ const buttonBase =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 const buttonVariants = {
-  primary: "bg-action text-on-action hover:bg-action-hover active:bg-action-pressed",
+  primary: "bg-btn text-on-btn hover:bg-btn-hover active:bg-btn-pressed",
   secondary: "border border-line-strong bg-surface text-fg-heading hover:bg-hover",
   destructive: "bg-error-500 text-white hover:bg-error-700",
 };

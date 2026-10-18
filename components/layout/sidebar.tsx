@@ -21,7 +21,8 @@ interface SidebarProps {
 const navBase =
   "flex w-full items-center gap-3 rounded-sm border px-4 py-3 text-sm transition-colors " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
-const navActive = "border-selected bg-selected font-medium text-on-selected";
+const navActive = "border-transparent bg-btn font-medium text-on-btn";
+const sessionActive = "border-transparent bg-session-active font-semibold text-fg-strong";
 const navIdle = "border-transparent text-fg hover:bg-hover";
 
 interface NavLinkProps {
@@ -56,7 +57,7 @@ export function Sidebar({ user, recentSessions, onNavigate, onClose }: SidebarPr
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between px-6 py-2">
           <Link href="/" onClick={onNavigate} className="flex items-center gap-2.5 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
-            <span className="flex size-10 items-center justify-center rounded-badge bg-action text-on-action">
+            <span className="flex size-10 items-center justify-center rounded-badge bg-night-500 text-white">
               <Sparkles className="size-5" aria-hidden="true" />
             </span>
             <span className="cv01 text-2xl font-semibold text-fg-strong">Vantage</span>
@@ -105,7 +106,7 @@ export function Sidebar({ user, recentSessions, onNavigate, onClose }: SidebarPr
                       className={cn(
                         "block truncate rounded-sm border px-4 py-2 text-sm transition-colors " +
                           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-                        isActive ? navActive : navIdle,
+                        isActive ? sessionActive : navIdle,
                       )}
                     >
                       {session.title}
@@ -120,7 +121,7 @@ export function Sidebar({ user, recentSessions, onNavigate, onClose }: SidebarPr
 
       <div className="flex flex-col gap-2.5">
         <div className="px-4">
-          <Link href="/settings/billing" onClick={onNavigate} className={cn(buttonVariants({ variant: "secondary" }), "w-full justify-start")}>
+          <Link href="/settings/billing" onClick={onNavigate} className={cn(buttonVariants({ variant: "secondary" }), "w-full justify-start bg-black text-white hover:bg-night-900")}>
             <Sparkles className="size-4" aria-hidden="true" />
             Upgrade to VantagePro
           </Link>

@@ -10,7 +10,7 @@ const iconButtonVariants = cva(
       tone: {
         filled: "size-10 bg-subtle text-fg-heading hover:bg-subtle-hover",
         inline: "size-9 text-fg-muted hover:bg-subtle",
-        primary: "size-10 bg-action text-on-action hover:bg-action-hover active:bg-action-pressed",
+        primary: "size-10 bg-btn text-on-btn hover:bg-btn-hover active:bg-btn-pressed",
       },
     },
     defaultVariants: { tone: "filled" },

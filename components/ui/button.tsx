@@ -10,8 +10,8 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-action text-on-action hover:bg-action-hover active:bg-action-pressed",
-        secondary: "border border-line-strong bg-surface text-fg-heading hover:bg-hover",
+        primary: "bg-btn text-on-btn hover:bg-btn-hover active:bg-btn-pressed",
+        secondary: "border border-transparent bg-subtle text-fg-heading hover:bg-subtle-hover",
         destructive: "bg-error-500 text-white hover:bg-error-700",
       },
       size: {

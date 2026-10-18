@@ -23,11 +23,11 @@ export function RecommendationList({ report, variant }: RecommendationsProps) {
         );
         return (
           <li key={recommendation.id} className="flex gap-3 border-t border-line py-4 first:border-t-0 first:pt-0">
-            <span className="cv01 w-8 shrink-0 text-2xl font-semibold text-fg-subtle" aria-hidden="true">
+            <span className="cv01 w-8 shrink-0 text-2xl font-bold text-fg-label" aria-hidden="true">
               {recommendation.rank}.
             </span>
             <div className="flex min-w-0 flex-col gap-1">
-              <h3 className="cv01 text-lg font-semibold text-fg">
+              <h3 className="cv01 text-xl font-bold text-fg-label">
                 <span className="sr-only">{`Recommendation ${recommendation.rank}: `}</span>
                 {recommendation.title}
               </h3>

@@ -65,14 +65,24 @@ Load Open Sauce Two at weights 400, 500, and 600 only.
 
 The brand primary is **#3929CE** (`primary-500`).
 
+**Buttons are black and white, not blue** (as in the Figma file). Blue is for toggles, focus, and selected states.
+
+| Button state | Utility | Light | Dark |
+|---------|---------|---------|---------|
+| Default fill, text | `bg-btn`, `text-on-btn` | black, white | white, black |
+| Hover | `hover:bg-btn-hover` | `night-900` | `night-150` |
+| Pressed | `active:bg-btn-pressed` | `night-800` | `night-300` |
+
+Selected states follow the Figma file too: the selected report tab is light grey with dark text (`bg-tab-active`), the selected Likes/Dislikes, Page and Assistant-tab choices are the lavender chip (`bg-chip`), and the open session is black (`bg-session-active`). The chart and switch colors are lavender and indigo from the file. Blue stays on the View Maps switch, the selected Likes/Dislikes and Page choices, and the input focus border. The `bg-action` utilities (`primary-500`) are for those, never for a button.
+
 | State | Utility | Light | Dark |
 |---------|---------|---------|---------|
-| Default fill | `bg-action` | `primary-500` | `primary-500` |
-| Hover | `hover:bg-action-hover` | `primary-600` | `primary-400` |
-| Pressed | `active:bg-action-pressed` | `primary-700` | `primary-600` |
+| Accent fill (toggle on) | `bg-action` | `primary-500` | `primary-500` |
+| Accent hover | `hover:bg-action-hover` | `primary-600` | `primary-400` |
+| Accent pressed | `active:bg-action-pressed` | `primary-700` | `primary-600` |
 | Accent text, toggle on, focus outline | `text-accent`, `bg-accent`, `outline-accent` | `primary-500` | `primary-300` |
-| Selected / active background | `bg-selected` | `primary-50` | #262254 |
-| Selected border | `border-selected-line` | `primary-75` | `primary-400` |
+| Selected (neutral grey) | `bg-selected` | `grey-100` | `night-800` |
+| Selected border | `border-selected-line` | `grey-300` | `night-700` |
 | Focus ring | `ring-focus` | `primary-50` | #2A246E |
 | Count badge | `bg-primary-400` | `primary-400` | `primary-400` |
 

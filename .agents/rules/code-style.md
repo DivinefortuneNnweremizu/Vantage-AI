@@ -509,7 +509,7 @@ In JSX, use the Tailwind utilities generated from the token theme. In CSS, SVG, 
 Good:
 
 ```tsx
-bg-action hover:bg-action-hover
+bg-btn hover:bg-btn-hover
 
 text-fg-muted
 
