@@ -39,6 +39,9 @@ export interface OpenAiCompatibleConfig {
 const ANALYZE_TIMEOUT_MS = 110_000;
 const CHAT_TIMEOUT_MS = 60_000;
 
+/** A busy provider (503) or a rate limit (429) often clears within seconds, so try once more before giving up. */
+const BUSY_RETRY_DELAY_MS = 3000;
+
 const DEFAULT_ANALYZE_MAX_TOKENS = 6000;
 const CHAT_MAX_TOKENS = 900;
 
@@ -125,6 +128,13 @@ export class OpenAiCompatibleProvider implements AiProvider {
   }
 
   private async post(body: CompletionBody, timeoutMs: number): Promise<Response> {
+    const response = await this.send(body, timeoutMs);
+    if (response.status !== 429 && response.status !== 503) return response;
+    await new Promise((resolve) => setTimeout(resolve, BUSY_RETRY_DELAY_MS));
+    return this.send(body, timeoutMs);
+  }
+
+  private send(body: CompletionBody, timeoutMs: number): Promise<Response> {
     const baseUrl = this.config.baseUrl.replace(/\/+$/, "");
     return fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
@@ -164,7 +174,7 @@ export class OpenAiCompatibleProvider implements AiProvider {
     }
     // 429 is a usage limit. 503 is the provider saying it is overloaded ("high demand"). Both are usually temporary.
     if (response.status === 429 || response.status === 503) {
-      throw new ProviderQuotaError(`${this.config.displayName} is busy or at its usage limit right now.`);
+      throw new ProviderQuotaError(`${this.config.displayName} is busy or at its usage limit right now (status ${response.status}).`);
     }
     throw new Error(`The AI provider returned status ${response.status}.`);
   }

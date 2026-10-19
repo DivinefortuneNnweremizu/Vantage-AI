@@ -150,7 +150,7 @@ describe("DeepSeek errors", () => {
   });
 
   it("treats other failures as a plain error", async () => {
-    fetchMock.mockResolvedValueOnce(jsonResponse({ error: "busy" }, 503));
+    fetchMock.mockResolvedValueOnce(jsonResponse({ error: "broken" }, 500));
     const error = await new DeepSeekAiProvider().analyze(input).catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(Error);
     expect(error).not.toBeInstanceOf(AiProviderUnavailableError);

@@ -105,14 +105,44 @@ describe("Gemini provider", () => {
   });
 
   it("treats Google's 503 'high demand' as busy too, so the app can fall back to a demo report", async () => {
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ error: { code: 503, status: "UNAVAILABLE" } }), { status: 503 }));
-    await expect(new GeminiAiProvider().analyze(input)).rejects.toBeInstanceOf(ProviderQuotaError);
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
+    try {
+      fetchMock.mockImplementation(async () => new Response(JSON.stringify({ error: { code: 503, status: "UNAVAILABLE" } }), { status: 503 }));
+      const result = new GeminiAiProvider().analyze(input).catch((caught: unknown) => caught);
+      await vi.advanceTimersByTimeAsync(3000);
+      const error = await result;
+      expect(error).toBeInstanceOf(ProviderQuotaError);
+      expect((error as Error).message).toContain("503");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("reports a usage limit separately, so the app can fall back to a demo report", async () => {
-    fetchMock.mockResolvedValueOnce(new Response("{}", { status: 429 }));
-    const error = await new GeminiAiProvider().analyze(input).catch((caught: unknown) => caught);
-    expect(error).toBeInstanceOf(ProviderQuotaError);
-    expect(String((error as Error).message)).not.toContain("gemini-test-key");
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
+    try {
+      fetchMock.mockImplementation(async () => new Response("{}", { status: 429 }));
+      const result = new GeminiAiProvider().analyze(input).catch((caught: unknown) => caught);
+      await vi.advanceTimersByTimeAsync(3000);
+      const error = await result;
+      expect(error).toBeInstanceOf(ProviderQuotaError);
+      expect(String((error as Error).message)).not.toContain("gemini-test-key");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("tries once more when the provider is busy, and uses the second answer if it works", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
+    try {
+      fetchMock.mockResolvedValueOnce(new Response("{}", { status: 503 }));
+      fetchMock.mockResolvedValueOnce(ok('{"ok":true}'));
+      const result = new GeminiAiProvider().analyze(input);
+      await vi.advanceTimersByTimeAsync(3000);
+      await expect(result).resolves.toEqual({ ok: true });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
