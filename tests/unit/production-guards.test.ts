@@ -73,8 +73,12 @@ describe("demo AI provider", () => {
 
     vi.resetModules();
     vi.stubEnv("AI_PROVIDER", "gemini");
+    vi.stubEnv("REAL_AI_BLOCKED_COUNTRIES", "");
     const real = await import("@/services/ai");
     expect(real.sendsImagesToProvider()).toBe(true);
+    expect(real.sendsImagesToProvider("NG")).toBe(true);
+    // Visitors from regions where real AI is off get a demo report, so nothing leaves the app.
+    expect(real.sendsImagesToProvider("DE")).toBe(false);
   });
 
   it("is refused in production, so users are never shown invented reports", async () => {

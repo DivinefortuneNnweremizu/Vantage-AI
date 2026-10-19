@@ -1,6 +1,7 @@
 import { DeepSeekAiProvider } from "@/services/ai/providers/deepseek";
 import { GeminiAiProvider } from "@/services/ai/providers/gemini";
 import { MockAiProvider } from "@/services/ai/providers/mock";
+import { isRealAiBlocked } from "@/services/ai/regions";
 import type { AiProvider } from "@/services/ai/provider";
 
 let provider: AiProvider | undefined;
@@ -24,9 +25,11 @@ export function getDemoProvider(): AiProvider {
 }
 
 /** True when an analysis may send the design images to an outside AI provider, rather than make a demo report. */
-export function sendsImagesToProvider(): boolean {
+export function sendsImagesToProvider(country: string | null = null): boolean {
   try {
-    return !getAiProvider().isDemo;
+    if (getAiProvider().isDemo) return false;
+    // Visitors from regions where real AI is off get a demo report, so nothing is sent.
+    return !(isRealAiBlocked(country) && isDemoAllowed());
   } catch {
     return false;
   }

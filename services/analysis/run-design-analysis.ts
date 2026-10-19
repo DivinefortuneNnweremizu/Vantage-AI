@@ -20,6 +20,8 @@ export interface RunAnalysisParams {
   sessionId: string;
   /** When provided, replaces the session goal. Pass an empty string to clear it. */
   goal?: string;
+  /** The visitor's country, when known. Some regions get a demo report instead of a real analysis. */
+  country?: string | null;
 }
 
 export interface AnalysisOutcome {
@@ -145,7 +147,7 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
   const session = await getOwnedSession(userId, sessionId);
   const assets = await loadPendingAssets(session);
   // Chosen before anything is saved: past the daily cap this may switch to a demo report, or refuse.
-  let provider = await chooseProvider(userId);
+  let provider = await chooseProvider(userId, params.country ?? null);
 
   const goal = params.goal !== undefined ? params.goal.trim() || null : session.goal;
 

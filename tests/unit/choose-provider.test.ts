@@ -26,6 +26,7 @@ beforeEach(() => {
   vi.stubEnv("REAL_AI_PER_USER_PER_DAY", "");
   vi.stubEnv("REAL_AI_PER_DAY", "");
   vi.stubEnv("ALLOW_DEMO_AI", "");
+  vi.stubEnv("REAL_AI_BLOCKED_COUNTRIES", "");
 });
 
 afterEach(() => {
@@ -106,5 +107,64 @@ describe("demo fallback helpers", () => {
     vi.stubEnv("NODE_ENV", "production");
     const { demoFallbackOrNull } = await load();
     expect(demoFallbackOrNull()).toBeNull();
+  });
+});
+
+describe("regions where real AI is off", () => {
+  it("gives visitors from the EEA a demo report, without counting anything", async () => {
+    const { chooseProvider } = await load();
+    expect((await chooseProvider("user-1", "DE")).isDemo).toBe(true);
+    expect(count).not.toHaveBeenCalled();
+  });
+
+  it("gives visitors from the UK and Switzerland a demo report too", async () => {
+    const { chooseProvider } = await load();
+    expect((await chooseProvider("user-1", "GB")).isDemo).toBe(true);
+    expect((await chooseProvider("user-1", "CH")).isDemo).toBe(true);
+  });
+
+  it("uses the real provider for visitors elsewhere, and when the country is unknown", async () => {
+    usage(0, 0);
+    const { chooseProvider } = await load();
+    expect((await chooseProvider("user-1", "NG")).id).toBe("gemini");
+    expect((await chooseProvider("user-1", null)).id).toBe("gemini");
+    expect((await chooseProvider("user-1")).id).toBe("gemini");
+  });
+
+  it("refuses with a clear message in production when demo reports are not allowed", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    const { chooseProvider } = await load();
+    await expect(chooseProvider("user-1", "FR")).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("can be turned off for people who pay for the provider", async () => {
+    vi.stubEnv("REAL_AI_BLOCKED_COUNTRIES", "none");
+    usage(0, 0);
+    const { chooseProvider } = await load();
+    expect((await chooseProvider("user-1", "DE")).id).toBe("gemini");
+  });
+});
+
+describe("chooseChatProvider", () => {
+  it("uses the real assistant for a real report from an allowed region", async () => {
+    const { chooseChatProvider } = await load();
+    expect(chooseChatProvider("NG", false).id).toBe("gemini");
+    expect(chooseChatProvider(null, false).id).toBe("gemini");
+  });
+
+  it("uses the demo assistant for a demo report, so sample content is never sent to the provider", async () => {
+    const { chooseChatProvider } = await load();
+    expect(chooseChatProvider("NG", true).isDemo).toBe(true);
+  });
+
+  it("uses the demo assistant for visitors from regions where real AI is off", async () => {
+    const { chooseChatProvider } = await load();
+    expect(chooseChatProvider("DE", false).isDemo).toBe(true);
+  });
+
+  it("refuses in production, for those regions, when demo reports are not allowed", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    const { chooseChatProvider } = await load();
+    expect(() => chooseChatProvider("DE", false)).toThrow("not available in your region");
   });
 });

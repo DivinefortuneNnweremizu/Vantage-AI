@@ -1,7 +1,9 @@
 import { AppError } from "@/lib/app-error";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import type { ApiErrorCode } from "@/lib/api-response";
 import { getAiProvider, getDemoProvider, isDemoAllowed } from "@/services/ai";
+import { isRealAiBlocked } from "@/services/ai/regions";
 import type { AiProvider } from "@/services/ai/provider";
 
 /**
@@ -32,10 +34,12 @@ function countRealAnalyses(userId?: string): Promise<number> {
   });
 }
 
+const REGION_MESSAGE = "Real AI analysis is not available in your region right now.";
+
 /** What to use when the real provider cannot be used: a demo report if allowed, otherwise a clear error. */
-export function demoFallbackOrThrow(message: string): AiProvider {
+export function demoFallbackOrThrow(message: string, code: ApiErrorCode = "RATE_LIMITED"): AiProvider {
   if (isDemoAllowed()) return getDemoProvider();
-  throw new AppError("RATE_LIMITED", message);
+  throw new AppError(code, message);
 }
 
 /** Like demoFallbackOrThrow, but returns null when there is no demo to fall back to. */
@@ -43,10 +47,18 @@ export function demoFallbackOrNull(): AiProvider | null {
   return isDemoAllowed() ? getDemoProvider() : null;
 }
 
-/** Picks the provider for one analysis: the configured one, unless the person or the site is over its daily cap. */
-export async function chooseProvider(userId: string): Promise<AiProvider> {
+/**
+ * Picks the provider for one analysis: the configured one, unless the visitor is in a region where real AI
+ * is switched off (see services/ai/regions.ts), or the person or the site is over its daily cap.
+ */
+export async function chooseProvider(userId: string, country: string | null = null): Promise<AiProvider> {
   const provider = getAiProvider();
   if (provider.isDemo) return provider;
+
+  if (isRealAiBlocked(country)) {
+    logger.info("Real AI is off for this region, using a demo report", { country });
+    return demoFallbackOrThrow(REGION_MESSAGE, "FORBIDDEN");
+  }
 
   const perUser = limitFromEnv("REAL_AI_PER_USER_PER_DAY", DEFAULT_PER_USER_PER_DAY);
   const perDay = limitFromEnv("REAL_AI_PER_DAY", DEFAULT_PER_DAY);
@@ -61,5 +73,20 @@ export async function chooseProvider(userId: string): Promise<AiProvider> {
     logger.info("Daily cap reached, using a demo report", { everyone, perDay });
     return demoFallbackOrThrow("Real analyses are used up for today. Come back tomorrow.");
   }
+  return provider;
+}
+
+/**
+ * Picks the provider for the assistant. A demo report gets the demo assistant, because the report is
+ * sample content and there is no reason to send it to a real provider. Regions where real AI is off get
+ * the demo assistant too.
+ */
+export function chooseChatProvider(country: string | null, reportIsDemo: boolean): AiProvider {
+  const provider = getAiProvider();
+  if (provider.isDemo) return provider;
+
+  const demo = demoFallbackOrNull();
+  if (reportIsDemo && demo) return demo;
+  if (isRealAiBlocked(country)) return demoFallbackOrThrow(REGION_MESSAGE, "FORBIDDEN");
   return provider;
 }

@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { ok } from "@/lib/api-response";
+import { visitorCountry } from "@/lib/visitor-country";
 import { assertSameOrigin, enforceRateLimit, handleRouteError, requireApiUser } from "@/lib/route-helpers";
 import { askAssistantSchema, listAssistantMessages, streamAssistantReply } from "@/features/assistant/service";
 import { uuidSchema } from "@/features/sessions/schemas";
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     const sessionId = uuidSchema.parse((await params).sessionId);
     const { question } = askAssistantSchema.parse(await request.json().catch(() => ({})));
 
-    const stream = await streamAssistantReply(user.id, sessionId, question);
+    const stream = await streamAssistantReply(user.id, sessionId, question, visitorCountry(request.headers));
 
     return new Response(stream, {
       headers: {

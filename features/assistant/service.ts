@@ -5,8 +5,8 @@ import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { getReportView, type ReportView } from "@/features/analysis/queries";
 import { getOwnedSession } from "@/features/sessions/service";
-import { getAiProvider } from "@/services/ai";
 import type { ChatReportContext } from "@/services/ai/provider";
+import { chooseChatProvider } from "@/services/analysis/choose-provider";
 
 export const askAssistantSchema = z.object({
   question: z.string().trim().min(1, "Type a question first.").max(1000, "Use 1,000 characters or fewer."),
@@ -73,6 +73,7 @@ export async function streamAssistantReply(
   userId: string,
   sessionId: string,
   question: string,
+  country: string | null = null,
 ): Promise<ReadableStream<Uint8Array>> {
   await getOwnedSession(userId, sessionId);
 
@@ -86,7 +87,7 @@ export async function streamAssistantReply(
     data: { sessionId, analysisId: report.analysis.id, role: "USER", content: question },
   });
 
-  const provider = getAiProvider();
+  const provider = chooseChatProvider(country, report.analysis.isDemo);
   const chunks = provider.chat({
     report: toChatContext(report),
     history: history.slice(-CONTEXT_HISTORY).map((message) => ({ role: message.role, content: message.content })),

@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 
 import { assertSameOrigin, enforceRateLimit, handleRouteError, requireApiUser, userMessageFor } from "@/lib/route-helpers";
 import { logger } from "@/lib/logger";
+import { visitorCountry } from "@/lib/visitor-country";
 import { analysisRequestSchema, type AnalysisEvent } from "@/features/analysis/schemas";
 import { uuidSchema } from "@/features/sessions/schemas";
 import { getOwnedSession } from "@/features/sessions/service";
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     const body = analysisRequestSchema.parse(await request.json().catch(() => ({})));
     await getOwnedSession(user.id, sessionId);
 
+    const country = visitorCountry(request.headers);
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream<Uint8Array>({
@@ -42,7 +44,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
           }
         };
 
-        runDesignAnalysis({ userId: user.id, sessionId, goal: body.goal }, send)
+        runDesignAnalysis({ userId: user.id, sessionId, goal: body.goal, country }, send)
           .catch((error: unknown) => {
             logger.warn("Analysis ended with an error", { sessionId });
             send({ type: "error", message: userMessageFor(error) });

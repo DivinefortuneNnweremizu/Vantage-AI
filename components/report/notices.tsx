@@ -7,7 +7,7 @@ export function DemoNotice() {
       <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       <p>
         <strong className="font-semibold">Demo report.</strong> These findings are sample content, not an analysis of your design. Real
-        AI analyses are limited each day, and this one was not available.
+        AI analysis is limited each day and is not available in every region, so this one is a demo.
       </p>
     </div>
   );

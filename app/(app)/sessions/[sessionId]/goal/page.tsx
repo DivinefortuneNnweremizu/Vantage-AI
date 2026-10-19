@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { PageTitle } from "@/components/layout/page-title";
 import { GoalStep } from "@/components/session/goal-step";
+import { visitorCountry } from "@/lib/visitor-country";
 import { requireCurrentUser } from "@/features/auth/get-current-user";
 import { listPendingAssets } from "@/features/sessions/assets";
 import { loadOwnedSessionOrNotFound } from "@/features/sessions/page-helpers";
@@ -34,7 +36,7 @@ export default async function GoalPage({ params }: GoalPageProps) {
         coverName={first.originalName}
         pageCount={assets.length}
         initialGoal={session.goal ?? ""}
-        imagesGoToAi={sendsImagesToProvider()}
+        imagesGoToAi={sendsImagesToProvider(visitorCountry(await headers()))}
       />
     </div>
   );
