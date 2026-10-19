@@ -80,6 +80,14 @@ test.describe("first analysis, start to finish", () => {
     // "Show on design" is a real, labelled button, and it jumps to the matching marker.
     await page.getByRole("button", { name: /^Show .* on the design$/ }).first().click();
     await expect(page.getByRole("button", { name: /^Like: / }).first()).toBeFocused();
+    // The picked marker stands out: marked, and much bigger than a normal marker.
+    const picked = page.locator("button[data-highlighted='true']");
+    await expect(picked).toHaveCount(1);
+    // It grows with a short animation, so wait for it to finish.
+    await expect.poll(async () => (await picked.boundingBox())?.width ?? 0).toBeGreaterThan(48);
+    // Clicking empty space on the design clears it.
+    await shownDesign.click({ position: { x: 5, y: 5 } });
+    await expect(page.locator("button[data-highlighted='true']")).toHaveCount(0);
 
     // Recommendations: same layout, design on the left and the list on the right, both in view.
     await tabs.getByRole("tab", { name: "Recommendations" }).click();

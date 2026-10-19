@@ -52,6 +52,7 @@ export function SentimentMap({ title, assets, findings }: SentimentMapProps) {
   const visible = findings.filter((finding) => finding.valence === wantedValence);
   const onThisPage = visible.filter((finding) => finding.marker !== null && finding.assetId === page?.id);
   const isJourney = assets.length > 1;
+  const highlightedOnPage = onThisPage.some((finding) => finding.id === highlightedId);
   const pageNumberFor = (assetId: string | null): number => (assetId ? assets.findIndex((asset) => asset.id === assetId) + 1 : 0);
 
   function openFinding(id: string): void {
@@ -67,7 +68,12 @@ export function SentimentMap({ title, assets, findings }: SentimentMapProps) {
     if (targetPage >= 0) setPageIndex(targetPage);
     // Highlight the marker too, so it is obvious which one belongs to this finding.
     setHighlightedId(id);
-    requestAnimationFrame(() => markerRefs.current.get(id)?.focus());
+    requestAnimationFrame(() => {
+      const marker = markerRefs.current.get(id);
+      // On a narrow screen the design sits above the list, so bring it into view.
+      marker?.scrollIntoView({ behavior: "smooth", block: "center" });
+      marker?.focus({ preventScroll: true });
+    });
   }
 
   return (
@@ -76,7 +82,13 @@ export function SentimentMap({ title, assets, findings }: SentimentMapProps) {
       <div className="flex min-w-0 flex-col gap-3 lg:sticky lg:top-24">
         {page ? (
           <>
-            <div className="relative mx-auto w-fit max-w-full overflow-hidden rounded-2xl border border-line bg-subtle">
+            {/* Clicking empty space on the design clears the highlight. Markers have their own buttons. */}
+            <div
+              className="relative mx-auto w-fit max-w-full overflow-hidden rounded-2xl border border-line bg-subtle"
+              onClick={(event) => {
+                if (event.target === event.currentTarget || (event.target as HTMLElement).tagName === "IMG") setHighlightedId(null);
+              }}
+            >
               <AssetImage
                 assetId={page.id}
                 alt={`${title}${isJourney ? `, page ${pageIndex + 1} of ${assets.length}` : ""}. Markers are listed beside it.`}
@@ -87,13 +99,26 @@ export function SentimentMap({ title, assets, findings }: SentimentMapProps) {
                     const isDislike = finding.valence === "dislike";
                     const Icon = isDislike ? Frown : Smile;
                     const marker = finding.marker as { x: number; y: number };
+                    const isHighlighted = highlightedId === finding.id;
+                    // While one marker is picked, the others step back so the picked one cannot be missed.
+                    const isDimmed = highlightedOnPage && !isHighlighted;
                     return (
                       // Positions come from the report data, so they are the one place inline styles are used.
                       <div
                         key={finding.id}
-                        className="absolute -translate-x-1/2 -translate-y-1/2"
+                        className={cn("absolute -translate-x-1/2 -translate-y-1/2", isHighlighted ? "z-20" : "z-10")}
                         style={{ left: `${marker.x * 100}%`, top: `${marker.y * 100}%` }}
                       >
+                        {/* A pulsing halo behind the picked marker. It stops for people who prefer less motion. */}
+                        {isHighlighted ? (
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              "absolute inset-0 animate-ping rounded-md motion-reduce:animate-none",
+                              isDislike ? "bg-error-500" : "bg-success-600",
+                            )}
+                          />
+                        ) : null}
                         <button
                           type="button"
                           ref={(node) => {
@@ -102,11 +127,14 @@ export function SentimentMap({ title, assets, findings }: SentimentMapProps) {
                           }}
                           onClick={() => openFinding(finding.id)}
                           aria-label={`${isDislike ? "Dislike" : "Like"}: ${finding.title}. ${finding.category}.`}
+                          data-highlighted={isHighlighted ? "true" : undefined}
                           className={cn(
-                            "flex size-10 items-center justify-center rounded-md text-white shadow-xs transition-transform hover:scale-105",
+                            "relative flex size-10 items-center justify-center rounded-md text-white shadow-xs transition-all duration-200 hover:scale-105",
                             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
                             isDislike ? "bg-error-500" : "bg-success-600",
-                            highlightedId === finding.id ? "ring-2 ring-white outline-2 outline-accent" : "",
+                            // Bigger, with a white ring inside a black one, so it shows on a light or a dark design.
+                            isHighlighted ? "scale-150 shadow-lg ring-4 ring-white outline-4 outline-black" : "",
+                            isDimmed ? "opacity-40" : "",
                           )}
                         >
                           <Icon className="size-6" aria-hidden="true" />
