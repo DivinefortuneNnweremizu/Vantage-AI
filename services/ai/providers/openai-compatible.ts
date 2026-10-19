@@ -74,7 +74,7 @@ export class OpenAiCompatibleProvider implements AiProvider {
     };
 
     let response = await this.post(body, ANALYZE_TIMEOUT_MS);
-    if (response.status === 400) {
+    if (response.status === 400 && !(await this.isKeyProblem(response))) {
       // Some models reject JSON mode with images, or an extra field. The prompt already asks for JSON only.
       const plain: CompletionBody = { ...body };
       delete plain.response_format;
@@ -140,17 +140,31 @@ export class OpenAiCompatibleProvider implements AiProvider {
     }
   }
 
+  /**
+   * Google answers a wrong key with 400, not 401, and says so in the body ("Please pass a valid API key").
+   * Reads a copy of the body, so the response can still be used.
+   */
+  private async isKeyProblem(response: Response): Promise<boolean> {
+    try {
+      const text = await response.clone().text();
+      return /api key/i.test(text);
+    } catch {
+      return false;
+    }
+  }
+
   /** Turns a failed response into an error. The message never includes the key or the request. */
   private async throwIfFailed(response: Response): Promise<void> {
     if (response.ok) return;
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401 || response.status === 403 || (response.status === 400 && (await this.isKeyProblem(response)))) {
       throw new AiProviderUnavailableError(`The AI provider did not accept the API key. Check ${this.config.keyVariable}.`);
     }
     if (response.status === 402) {
       throw new AiProviderUnavailableError("The AI provider account has no balance left. Top it up and try again.");
     }
-    if (response.status === 429) {
-      throw new ProviderQuotaError(`${this.config.displayName} is at its usage limit right now.`);
+    // 429 is a usage limit. 503 is the provider saying it is overloaded ("high demand"). Both are usually temporary.
+    if (response.status === 429 || response.status === 503) {
+      throw new ProviderQuotaError(`${this.config.displayName} is busy or at its usage limit right now.`);
     }
     throw new Error(`The AI provider returned status ${response.status}.`);
   }

@@ -164,7 +164,7 @@ The stack is inherited from the Design.md Generator project for consistency acro
 ## AI
 
 - Provider accessed only through the AI Service Layer (`services/ai/`).
-- Providers: Gemini (`services/ai/providers/gemini.ts`, free tier, `GEMINI_API_KEY`) and DeepSeek (`deepseek.ts`, `DEEPSEEK_API_KEY`). Both use the shared `openai-compatible.ts`. Models: `gemini-3.8-flash` and `deepseek-flash`, which accept images.
+- Providers: Gemini (`services/ai/providers/gemini.ts`, free tier, `GEMINI_API_KEY`) and DeepSeek (`deepseek.ts`, `DEEPSEEK_API_KEY`). Both use the shared `openai-compatible.ts`. Models: `gemini-3.6-flash` and `deepseek-flash`, which accept images.
 - The analysis model must support image input.
 - With no key, development uses the mocked provider that returns schema-valid reports. A key on its own selects its provider (Gemini first). Real analyses are capped per person and per day (`services/analysis/choose-provider.ts`); past a cap, or at a provider limit, the person gets a labeled demo report.
 

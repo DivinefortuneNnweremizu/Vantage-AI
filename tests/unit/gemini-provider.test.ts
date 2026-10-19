@@ -45,7 +45,7 @@ describe("Gemini provider", () => {
     expect((init?.headers as Record<string, string>).Authorization).toBe("Bearer gemini-test-key");
     expect(provider.id).toBe("gemini");
     expect(provider.isDemo).toBe(false);
-    expect(body().model).toBe("gemini-3.8-flash");
+    expect(body().model).toBe("gemini-3.6-flash");
   });
 
   it("keeps thinking short and leaves room for the report", async () => {
@@ -79,6 +79,34 @@ describe("Gemini provider", () => {
     expect(error).toBeInstanceOf(AiProviderUnavailableError);
     expect((error as Error).message).toContain("GEMINI_API_KEY");
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("recognises Google's 400 for a wrong key, and does not retry", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: { code: 400, message: "Please pass a valid API key", status: "INVALID_ARGUMENT" } }), { status: 400 }),
+    );
+    const error = await new GeminiAiProvider().analyze(input).catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(AiProviderUnavailableError);
+    expect((error as Error).message).toContain("GEMINI_API_KEY");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("still tells the user about a wrong key when it is the assistant", async () => {
+    fetchMock.mockResolvedValueOnce(new Response("API key not valid. Please pass a valid API key.", { status: 400 }));
+    const chat = new GeminiAiProvider().chat({
+      report: {
+        title: "T", goal: null, overall: 1, scores: { intuitive: 1, trusted: 1, valuable: 1 },
+        strengths: [], painPoints: [], overallTakeaway: "", findings: [], recommendations: [],
+      },
+      history: [],
+      question: "Hi?",
+    });
+    await expect(chat[Symbol.asyncIterator]().next()).rejects.toBeInstanceOf(AiProviderUnavailableError);
+  });
+
+  it("treats Google's 503 'high demand' as busy too, so the app can fall back to a demo report", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ error: { code: 503, status: "UNAVAILABLE" } }), { status: 503 }));
+    await expect(new GeminiAiProvider().analyze(input)).rejects.toBeInstanceOf(ProviderQuotaError);
   });
 
   it("reports a usage limit separately, so the app can fall back to a demo report", async () => {
