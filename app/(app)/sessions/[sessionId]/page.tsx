@@ -28,6 +28,10 @@ export async function generateMetadata({ params }: ReportPageProps): Promise<Met
   return { title: `${session.title} Design Analysis` };
 }
 
+// There is deliberately no loading.tsx in this folder (or above it, under sessions/). In the production build
+// a loading boundary here made most tab switches inside a report hang: the server answered, but the browser
+// never showed the new tab. It worked in development, so only a production build (or Vercel) shows it.
+// Check any change near here with `next build` and `next start`. See "Testing a production build" in the README.
 export default async function ReportPage({ params, searchParams }: ReportPageProps) {
   const user = await requireCurrentUser();
   const session = await loadOwnedSessionOrNotFound(user.id, (await params).sessionId);

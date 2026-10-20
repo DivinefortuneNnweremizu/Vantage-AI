@@ -51,6 +51,8 @@ export function ReportTabs({ sessionId, active, iteration }: ReportTabsProps) {
             tabIndex={isActive ? 0 : -1}
             href={tabHref(sessionId, tab.id, iteration)}
             scroll={false}
+            // Each tab is a full server render, so prefetching all five on every page view is wasted work.
+            prefetch={false}
             onKeyDown={(event) => {
               if (event.key === "ArrowRight") {
                 event.preventDefault();
