@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { makeDesignImage, uploadFromHome } from "./helpers";
+import { makeDesignImage, makeLargeImage, uploadFromHome } from "./helpers";
 
 test.describe("first analysis, start to finish", () => {
   test("upload, set a goal, analyze, read the report, ask the assistant", async ({ page }) => {
@@ -188,6 +188,28 @@ test.describe("upload rules", () => {
     await expect(page.getByRole("list", { name: "Pages in this design" }).getByRole("button")).toHaveCount(3); // 2 pages + add tile
     await page.getByRole("button", { name: "Delete this image" }).click();
     await expect(page.getByRole("list", { name: "Pages in this design" }).getByRole("button")).toHaveCount(2); // 1 page + add tile
+  });
+
+  test("a very large image is shrunk in the browser, so the upload fits under Vercel's 4.5 MB limit", async ({ page }) => {
+    test.setTimeout(120_000);
+    const big = await makeLargeImage();
+    expect(big.length).toBeGreaterThan(5 * 1024 * 1024);
+
+    const uploadSizes: number[] = [];
+    page.on("request", async (request) => {
+      if (request.method() === "POST" && /\/api\/sessions\/[^/]+\/assets$/.test(request.url())) {
+        // The size of the whole request, as the browser sent it.
+        uploadSizes.push(Number((await request.allHeaders())["content-length"] ?? 0));
+      }
+    });
+
+    await uploadFromHome(page, [{ name: "huge.png", buffer: big }]);
+    await expect(page).toHaveURL(/\/upload/, { timeout: 60_000 });
+    await expect(page.getByRole("img", { name: /Preview of huge/ })).toBeVisible();
+
+    await expect.poll(() => uploadSizes.length).toBe(1);
+    expect(uploadSizes[0]).toBeGreaterThan(100_000);
+    expect(uploadSizes[0]).toBeLessThan(4.5 * 1024 * 1024);
   });
 
   test("a file that is not an image is rejected with a clear message", async ({ page }) => {

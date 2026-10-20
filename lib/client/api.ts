@@ -1,3 +1,5 @@
+import { prepareForUpload } from "@/lib/client/shrink-image";
+
 /**
  * Small helpers for calling our own API from the browser.
  * Every API response is { success: true, data } or { success: false, error: { code, message } }.
@@ -69,7 +71,8 @@ export interface UploadedAsset {
   height: number | null;
 }
 
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+/** The most the browser will take. Anything over a few MB is shrunk before it is sent (see shrink-image.ts). */
+const MAX_PICKED_BYTES = 30 * 1024 * 1024;
 const ACCEPTED_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
 export const ACCEPT_ATTRIBUTE = ACCEPTED_MIME_TYPES.join(",");
 
@@ -78,15 +81,17 @@ export function checkFileBeforeUpload(file: File): string | null {
   if (!(ACCEPTED_MIME_TYPES as readonly string[]).includes(file.type)) {
     return `${file.name} is not a PNG, JPG, or WebP image.`;
   }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    return `${file.name} is larger than 10 MB.`;
+  if (file.size > MAX_PICKED_BYTES) {
+    return `${file.name} is larger than 30 MB.`;
   }
   return null;
 }
 
 export async function uploadAsset(sessionId: string, file: File, replaceAssetId?: string): Promise<UploadedAsset> {
+  // Big images are shrunk first, so the request stays under what a host like Vercel allows.
+  const prepared = await prepareForUpload(file);
   const form = new FormData();
-  form.set("file", file);
+  form.set("file", prepared);
   if (replaceAssetId) form.set("replaceAssetId", replaceAssetId);
 
   const response = await fetch(`/api/sessions/${sessionId}/assets`, { method: "POST", body: form });

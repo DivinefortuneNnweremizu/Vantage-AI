@@ -22,3 +22,18 @@ export async function uploadFromHome(page: Page, files: Array<{ name: string; bu
     files.map((file) => ({ name: file.name, mimeType: "image/png", buffer: file.buffer })),
   );
 }
+
+/**
+ * A deliberately huge picture (well over Vercel's 4.5 MB request limit) with noise, so it does not
+ * compress well. Used to check that big uploads are shrunk in the browser first.
+ */
+export async function makeLargeImage(): Promise<Buffer> {
+  const width = 2800;
+  const height = 1800;
+  const raw = Buffer.alloc(width * height * 3);
+  for (let index = 0; index < raw.length; index += 1) {
+    const column = Math.floor(index / 3) % width;
+    raw[index] = (Math.floor(column / 11) * 7 + Math.floor(Math.random() * 24)) & 255;
+  }
+  return sharp(raw, { raw: { width, height, channels: 3 } }).png({ compressionLevel: 1 }).toBuffer();
+}

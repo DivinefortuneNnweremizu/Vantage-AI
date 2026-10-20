@@ -215,7 +215,7 @@ export function Composer({ firstName }: ComposerProps) {
           aria-live="polite"
           className={cn("col-span-3 text-xs", message ? "text-error-fg" : "text-fg-subtle sr-only sm:not-sr-only")}
         >
-          {message ?? "Drop PNG, JPG, or WebP images here, or use the plus button. Up to 10 MB each."}
+          {message ?? "Drop PNG, JPG, or WebP images here, or use the plus button. Big images are shrunk to fit."}
         </p>
       </form>
     </div>

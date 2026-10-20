@@ -183,7 +183,7 @@ export function UploadStep({ sessionId, pageScope, assets, maxPages, skipped }: 
         >
           {busy === "add" ? <Loader2 className="size-8 animate-spin" aria-hidden="true" /> : <UploadCloud className="size-8" aria-hidden="true" />}
           <span className="cv01 text-base font-medium text-fg">Drop your design here, or choose a file</span>
-          <span className="text-sm">PNG, JPG, or WebP, up to 10 MB</span>
+          <span className="text-sm">PNG, JPG, or WebP. Big images are shrunk to fit.</span>
         </button>
         {errorMessage}
       </div>
