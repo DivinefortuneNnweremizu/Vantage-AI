@@ -19,8 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "db:dev": "node scripts/dev-db.mjs",
-    "db:setup:cloud": "node scripts/setup-cloud-db.mjs"
+    "db:dev": "node scripts/dev-db.mjs"
   },
   "dependencies": {
     "@fontsource/open-sauce-two": "^5.0.0",

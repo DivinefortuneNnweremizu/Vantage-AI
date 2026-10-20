@@ -230,9 +230,13 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
       report = await produce(provider);
     }
 
-    const stageGapMs = provider.isDemo ? 350 : 0;
-    stage("scoring");
-    await sleep(stageGapMs);
+    // A demo report is instant, so a short pause lets the person see each stage.
+    const advance = async (value: AnalysisProgressStage): Promise<void> => {
+      stage(value);
+      await sleep(provider.isDemo ? 350 : 0);
+    };
+
+    await advance("scoring");
     const scores = computeScores(
       report.findings.map((finding) => ({
         id: finding.id,
@@ -242,8 +246,7 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
       })),
     );
 
-    stage("sentiment");
-    await sleep(stageGapMs);
+    await advance("sentiment");
     const previousOrder = new Map(previous?.assets.map((link) => [link.assetId, link.order]) ?? []);
     const diff = previous
       ? diffIterations(
@@ -258,8 +261,7 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
         )
       : null;
 
-    stage("recommendations");
-    await sleep(stageGapMs);
+    await advance("recommendations");
 
     await persistReport({
       analysisId,
@@ -284,25 +286,30 @@ export async function runDesignAnalysis(params: RunAnalysisParams, emit: Emit): 
 
     return { analysisId, iteration };
   } catch (error) {
-    if (error instanceof AiProviderUnavailableError) {
-      await markFailed("The AI provider is not connected.");
-      throw new AppError("INTERNAL_ERROR", error.message);
-    }
-    if (error instanceof ProviderQuotaError) {
-      await markFailed("The AI provider was at its limit.");
-      throw new AppError("RATE_LIMITED", "The AI service is busy right now. Try again in a little while.");
-    }
-    if (error instanceof AppError) {
-      await markFailed(error.message);
-      throw error;
-    }
-    if (error instanceof ReportValidationError) {
-      logger.error("Report failed validation twice", { analysisId, issues: error.issues.slice(0, 5) });
-      await markFailed("The analysis result was not valid.");
-      throw new AppError("INTERNAL_ERROR", "We could not finish the analysis. Your images are saved. Try again.");
-    }
-    logger.error("Analysis failed", { analysisId, error: error instanceof Error ? error.message : "unknown" });
-    await markFailed("The analysis failed.");
-    throw new AppError("INTERNAL_ERROR", "We could not finish the analysis. Your images are saved. Try again.");
+    const { reason, thrown } = describeFailure(error, analysisId);
+    await markFailed(reason);
+    throw thrown;
   }
+}
+
+/** What to record on a failed analysis, and the safe error to give the person. */
+function describeFailure(error: unknown, analysisId: string): { reason: string; thrown: AppError } {
+  if (error instanceof AiProviderUnavailableError) {
+    return { reason: "The AI provider is not connected.", thrown: new AppError("INTERNAL_ERROR", error.message) };
+  }
+  if (error instanceof ProviderQuotaError) {
+    return {
+      reason: "The AI provider was at its limit.",
+      thrown: new AppError("RATE_LIMITED", "The AI service is busy right now. Try again in a little while."),
+    };
+  }
+  if (error instanceof AppError) return { reason: error.message, thrown: error };
+
+  const unfinished = new AppError("INTERNAL_ERROR", "We could not finish the analysis. Your images are saved. Try again.");
+  if (error instanceof ReportValidationError) {
+    logger.error("Report failed validation twice", { analysisId, issues: error.issues.slice(0, 5) });
+    return { reason: "The analysis result was not valid.", thrown: unfinished };
+  }
+  logger.error("Analysis failed", { analysisId, error: error instanceof Error ? error.message : "unknown" });
+  return { reason: "The analysis failed.", thrown: unfinished };
 }
