@@ -36,6 +36,13 @@ export function sendsImagesToProvider(country: string | null = null): boolean {
   }
 }
 
+/** The providers that can be named in AI_PROVIDER. To add one, add a line here. */
+const PROVIDERS: Record<string, () => AiProvider> = {
+  mock: getDemoProvider,
+  gemini: () => new GeminiAiProvider(),
+  deepseek: () => new DeepSeekAiProvider(),
+};
+
 /**
  * Chooses the AI provider from AI_PROVIDER ("gemini", "deepseek", or "mock").
  * When AI_PROVIDER is not set, a key picks it: GEMINI_API_KEY, then DEEPSEEK_API_KEY. With no key,
@@ -51,15 +58,9 @@ export function getAiProvider(): AiProvider {
     process.env.AI_PROVIDER ||
     (process.env.GEMINI_API_KEY ? "gemini" : process.env.DEEPSEEK_API_KEY || isProduction() ? "deepseek" : "mock");
 
-  if (wanted === "mock") {
-    provider = getDemoProvider();
-  } else if (wanted === "gemini") {
-    provider = new GeminiAiProvider();
-  } else if (wanted === "deepseek") {
-    provider = new DeepSeekAiProvider();
-  } else {
-    throw new Error(`Unknown AI_PROVIDER "${wanted}".`);
-  }
+  const create = PROVIDERS[wanted];
+  if (!create) throw new Error(`Unknown AI_PROVIDER "${wanted}".`);
 
+  provider = create();
   return provider;
 }

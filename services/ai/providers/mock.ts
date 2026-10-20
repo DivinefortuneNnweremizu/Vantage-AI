@@ -2,6 +2,10 @@ import "server-only";
 import { getPrinciple, principleAppliesTo } from "@/services/ai/principles/library";
 import type { AiProvider, AnalyzeInput, ChatInput } from "@/services/ai/provider";
 import type { ReportInput } from "@/features/analysis/schemas";
+import { composeMockAnswer } from "@/services/ai/providers/mock-answers";
+
+// Kept here so existing imports of composeMockAnswer from this file keep working.
+export { composeMockAnswer };
 
 /**
  * Demo provider. Returns DETERMINISTIC, INVENTED content so the whole product can run before a real
@@ -324,81 +328,3 @@ interface AnalyzeInputWithLatency extends AnalyzeInput {
   /** Test hook. Lets unit tests skip the simulated delay. */
   simulatedLatencyMs?: number;
 }
-
-function list(items: string[]): string {
-  return items.map((item, index) => `${index + 1}. ${item}`).join("\n");
-}
-
-/** Builds an answer from the report only. Never claims anything the report does not contain. */
-export function composeMockAnswer({ report, question }: ChatInput): string {
-  const q = question.toLowerCase();
-  const dislikes = report.findings.filter((finding) => finding.valence === "dislike");
-  const byCategory = (category: string) => report.findings.filter((finding) => finding.category === category);
-
-  const explain = (finding: ChatReportContext["findings"][number]) =>
-    `${finding.title} (${finding.category}). ${finding.observation} ${finding.impact} This comes from ${finding.standard}.`;
-
-  if (/contrast|access|read|legib|wcag/.test(q)) {
-    const matches = byCategory("Accessibility");
-    if (matches.length > 0) {
-      return `Here is what this report found on accessibility:\n\n${list(matches.map(explain))}`;
-    }
-    return "This report did not flag any accessibility problems. The accessibility checks it ran are listed under the Sentiment tab.";
-  }
-
-  if (/hierarch|prominen|attention|focus|stand out|main action/.test(q)) {
-    const matches = byCategory("Visual Hierarchy");
-    if (matches.length > 0) {
-      return `On visual hierarchy, the report says:\n\n${list(matches.map(explain))}`;
-    }
-  }
-
-  if (/mobile|responsive|thumb|tap|small screen/.test(q)) {
-    const matches = byCategory("Mobile Responsiveness");
-    if (matches.length > 0) {
-      return `On mobile and responsive behavior:\n\n${list(matches.map(explain))}`;
-    }
-    return "This report did not flag any mobile or responsive problems.";
-  }
-
-  if (/trust|credib|polish|professional/.test(q)) {
-    return `Trusted scored ${report.scores.trusted} out of 100. ${report.overallTakeaway}`;
-  }
-
-  if (/score|rating|number|percent/.test(q)) {
-    return (
-      `The overall score is ${report.overall} out of 100. Intuitive is ${report.scores.intuitive}, ` +
-      `Trusted is ${report.scores.trusted}, and Valuable is ${report.scores.valuable}. ` +
-      "Each score starts at 100, loses points for problems weighted by severity and by how strongly the related design standard bears on it, and regains a few points for strengths."
-    );
-  }
-
-  if (/fix|improve|first|recommend|change|how|priorit/.test(q)) {
-    const top = report.recommendations.slice(0, 3);
-    const opening = report.strengths[0] ? `${report.strengths[0]} That is a good base to build on.` : "This design has a good base to build on.";
-    const items = top.map((item, index) => {
-      const image = item.findingRefs[0] ? `\n[image: ${item.findingRefs[0]}]` : "";
-      return `${index + 1}. ${item.title}${image}\n${item.rationale}\n- ${item.change}`;
-    });
-    return `${opening}\n\nHere is what I would improve first.\n\n${items.join("\n\n")}\n\nStart with "${top[0]?.title ?? "the first change"}".`;
-  }
-
-  if (/strength|good|well|working|like/.test(q)) {
-    return `What the design does well:\n\n${list(report.strengths.slice(0, 4))}`;
-  }
-
-  if (/why|problem|pain/.test(q)) {
-    const first = dislikes[0];
-    if (first) {
-      return `${explain(first)}\n\nThe recommended change: ${report.recommendations[0]?.change ?? "see the Recommendations tab."}`;
-    }
-  }
-
-  const topPain = report.painPoints.slice(0, 2);
-  return (
-    "I can answer questions about this analysis, such as why a finding matters, what to fix first, or how a score was reached. " +
-    `The two biggest pain points right now:\n\n${list(topPain)}`
-  );
-}
-
-type ChatReportContext = ChatInput["report"];

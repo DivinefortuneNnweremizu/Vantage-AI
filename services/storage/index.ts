@@ -7,6 +7,18 @@ import type { StorageDriver } from "@/services/storage/types";
 
 let driver: StorageDriver | undefined;
 
+/** The drivers that can be named in STORAGE_DRIVER. To add one, add a line here. */
+const DRIVERS: Record<string, () => StorageDriver> = {
+  local: () => {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("The local storage driver is not allowed in production.");
+    }
+    return new LocalStorageDriver();
+  },
+  database: () => new DatabaseStorageDriver(),
+  supabase: () => new SupabaseStorageDriver(),
+};
+
 /**
  * Picks the storage driver: "local" (disk, development only), "supabase", or "database" (a table in
  * Postgres, for showcases). The local driver only works outside production, so uploaded files can never
@@ -20,16 +32,9 @@ export function getStorage(): StorageDriver {
   const productionDefault = isShowcaseMode() ? "database" : "supabase";
   const wanted = process.env.STORAGE_DRIVER || (process.env.NODE_ENV === "production" ? productionDefault : "local");
 
-  if (wanted === "local") {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("The local storage driver is not allowed in production.");
-    }
-    driver = new LocalStorageDriver();
-  } else if (wanted === "database") {
-    driver = new DatabaseStorageDriver();
-  } else {
-    driver = new SupabaseStorageDriver();
-  }
+  const create = DRIVERS[wanted];
+  if (!create) throw new Error(`Unknown STORAGE_DRIVER "${wanted}". Use local, supabase, or database.`);
 
+  driver = create();
   return driver;
 }

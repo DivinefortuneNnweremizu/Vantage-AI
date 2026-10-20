@@ -8,13 +8,10 @@ import { AiProviderUnavailableError, ProviderQuotaError, type AiProvider, type A
 import { chooseProvider, demoFallbackOrNull } from "@/services/analysis/choose-provider";
 import { diffIterations, fromStoredFinding, type ComparableFinding } from "@/services/analysis/match-iterations";
 import { persistReport } from "@/services/analysis/persist-report";
+import { produceReport } from "@/services/analysis/produce-report";
 import { computeScores } from "@/services/analysis/scoring/rubric";
-import { ReportValidationError, validateReport, type ValidatedReport } from "@/services/analysis/validate-report";
+import { ReportValidationError, type ValidatedReport } from "@/services/analysis/validate-report";
 import { getStorage } from "@/services/storage";
-
-// The analysis route is allowed 120 seconds. Each provider call gets less than half, so one retry still fits
-// and the run can fail cleanly (and be retried) instead of being cut off mid-way.
-const PROVIDER_TIMEOUT_MS = 55_000;
 
 interface RunAnalysisParams {
   userId: string;
@@ -34,22 +31,6 @@ type Emit = (event: AnalysisEvent) => void;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new AppError("INTERNAL_ERROR", "The analysis took too long. Try again.")), ms);
-    promise.then(
-      (value) => {
-        clearTimeout(timer);
-        resolve(value);
-      },
-      (error: unknown) => {
-        clearTimeout(timer);
-        reject(error);
-      },
-    );
-  });
 }
 
 type OwnedSession = Awaited<ReturnType<typeof getOwnedSession>>;
@@ -87,52 +68,6 @@ async function loadPendingAssets(session: OwnedSession) {
   }
 
   return assets;
-}
-
-/** Asks the provider for a report. A report that fails validation gets one more try, with the problems listed. */
-async function requestValidatedReport(
-  provider: AiProvider,
-  input: AnalyzeInput,
-  context: { assetCount: number; platform: OwnedSession["platform"] },
-  analysisId: string,
-): Promise<ValidatedReport> {
-  const first = await withTimeout(provider.analyze(input), PROVIDER_TIMEOUT_MS);
-  try {
-    return validateReport(first, context);
-  } catch (error) {
-    if (!(error instanceof ReportValidationError)) throw error;
-    logger.warn("Report failed validation, retrying once", { analysisId, issues: error.issues.length });
-    const second = await withTimeout(
-      provider.analyze({ ...input, validationFeedback: error.issues.slice(0, 10) }),
-      PROVIDER_TIMEOUT_MS,
-    );
-    return validateReport(second, context);
-  }
-}
-
-/** Asks the provider for a report. The provider call is one request, so the middle stages advance on a timer while it runs. */
-async function produceReport(
-  provider: AiProvider,
-  input: AnalyzeInput,
-  context: { assetCount: number; platform: OwnedSession["platform"] },
-  analysisId: string,
-  stage: (value: AnalysisProgressStage) => void,
-): Promise<ValidatedReport> {
-  const middleStages: AnalysisProgressStage[] = ["hierarchy", "accessibility", "interaction"];
-  let nextStage = 0;
-  const ticker = setInterval(() => {
-    const value = middleStages[nextStage];
-    if (value) {
-      stage(value);
-      nextStage += 1;
-    }
-  }, provider.isDemo ? 900 : 5000);
-
-  try {
-    return await requestValidatedReport(provider, input, context, analysisId);
-  } finally {
-    clearInterval(ticker);
-  }
 }
 
 /**
