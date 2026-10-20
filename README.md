@@ -89,7 +89,7 @@ For a demo link you do not need Supabase. Set `SHOWCASE_MODE=true` and give the 
 
 Showcase mode is a deliberate opt-in and works in production on purpose. It is not real security: anyone can "sign up" with a made-up email. Do not use it for real people's data. Real accounts need Supabase (see below).
 
-On Vercel, set `SHOWCASE_MODE=true`, `DATABASE_URL`, `DIRECT_URL`, `GEMINI_API_KEY`, `ALLOW_DEMO_AI=true`, and `NEXT_PUBLIC_APP_URL`. Create the tables once with `npx prisma migrate deploy`, with `DATABASE_URL` and `DIRECT_URL` pointing at that database.
+On Vercel, set `SHOWCASE_MODE=true`, `DATABASE_URL`, `DIRECT_URL`, `GEMINI_API_KEY`, `ALLOW_DEMO_AI=true`, and `NEXT_PUBLIC_APP_URL`. Create the tables once with `npm run db:setup:cloud`. It asks you to paste the two lines from Supabase (Connect, then the ORM tab) and the database password, creates the tables, and prints the two finished addresses for Vercel. It saves nothing to disk. (The manual way is `npx prisma migrate deploy` with `DATABASE_URL` and `DIRECT_URL` pointing at that database.)
 
 ## Testing a production build
 
