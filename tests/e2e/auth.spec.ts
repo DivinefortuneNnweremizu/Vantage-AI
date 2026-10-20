@@ -16,7 +16,8 @@ test.describe("log in, sign up, and onboarding", () => {
     await page.getByLabel("Password", { exact: true }).fill("any-password");
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Hi Demo");
+    // The demo user in local development, or "Guest" in showcase mode.
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Hi (Demo|Guest)/);
 
     // After logging out, this browser has an account, so the front door is now Log in.
     await page.getByRole("button", { name: /^Account menu for/ }).click();

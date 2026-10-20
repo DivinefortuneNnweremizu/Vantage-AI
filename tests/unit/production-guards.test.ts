@@ -13,22 +13,22 @@ describe("development sign-in", () => {
   it("is available only when explicitly enabled outside production", async () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("DEV_AUTH", "true");
-    const { isDevAuthEnabled } = await import("@/features/auth/dev-auth");
-    expect(isDevAuthEnabled()).toBe(true);
+    const { isGuestAuthEnabled } = await import("@/features/auth/dev-auth");
+    expect(isGuestAuthEnabled()).toBe(true);
   });
 
   it("is off by default", async () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("DEV_AUTH", "");
-    const { isDevAuthEnabled } = await import("@/features/auth/dev-auth");
-    expect(isDevAuthEnabled()).toBe(false);
+    const { isGuestAuthEnabled } = await import("@/features/auth/dev-auth");
+    expect(isGuestAuthEnabled()).toBe(false);
   });
 
   it("can never be enabled in production", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("DEV_AUTH", "true");
-    const { isDevAuthEnabled } = await import("@/features/auth/dev-auth");
-    expect(isDevAuthEnabled()).toBe(false);
+    const { isGuestAuthEnabled } = await import("@/features/auth/dev-auth");
+    expect(isGuestAuthEnabled()).toBe(false);
   });
 });
 

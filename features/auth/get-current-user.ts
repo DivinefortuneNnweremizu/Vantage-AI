@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { DEV_USER, isDevAuthEnabled } from "@/features/auth/dev-auth";
+import { guestIdentity, isGuestAuthEnabled, isShowcaseMode } from "@/features/auth/dev-auth";
 import { readDevSession } from "@/features/auth/dev-session";
 import { ensureUserRecords } from "@/features/auth/ensure-user-records";
 
@@ -24,11 +24,12 @@ export interface CurrentUser {
 export const getSessionUser = cache(async (): Promise<CurrentUser | null> => {
   let identity: CurrentUser;
 
-  if (isDevAuthEnabled()) {
+  if (isGuestAuthEnabled()) {
     const session = await readDevSession();
     if (!session) return null;
-    // A fresh sign-up has no name until onboarding saves one.
-    identity = { ...DEV_USER, fullName: session.name || (session.kind === "new" ? null : DEV_USER.fullName) };
+    // In showcase mode every browser has its own account. Without one, never fall back to a shared account.
+    if (isShowcaseMode() && !session.userId) return null;
+    identity = guestIdentity(session);
   } else {
     const supabase = await createSupabaseServerClient();
     const {

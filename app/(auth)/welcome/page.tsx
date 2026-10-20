@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { AuthForm } from "@/components/auth/auth-form";
 import { completeOnboardingAction } from "@/features/auth/actions";
-import { isDevAuthEnabled } from "@/features/auth/dev-auth";
+import { isGuestAuthEnabled } from "@/features/auth/dev-auth";
 import { requireCurrentUser } from "@/features/auth/get-current-user";
 
 export const metadata: Metadata = { title: "Welcome" };
@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Welcome" };
 export default async function WelcomePage() {
   const user = await requireCurrentUser();
   // In dev the demo user already has a name, but the screen stays reachable so it can be tried.
-  if (user.fullName && !isDevAuthEnabled()) redirect("/");
+  if (user.fullName && !isGuestAuthEnabled()) redirect("/");
 
   return (
     <div className="flex flex-col gap-8">

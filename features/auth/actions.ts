@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { isDevAuthEnabled } from "@/features/auth/dev-auth";
+import { isGuestAuthEnabled } from "@/features/auth/dev-auth";
 import { endDevSession, saveDevName, startDevSession } from "@/features/auth/dev-session";
 import { getSessionUser } from "@/features/auth/get-current-user";
 import { safeRedirectPath } from "@/features/auth/redirect";
@@ -38,7 +38,7 @@ export async function signInAction(_previous: AuthFormState, formData: FormData)
   const destination = safeRedirectPath(formData.get("next"));
 
   // Dev sign-in: any valid details continue as the demo user.
-  if (isDevAuthEnabled()) {
+  if (isGuestAuthEnabled()) {
     await startDevSession("existing");
     redirect(destination);
   }
@@ -63,7 +63,7 @@ export async function signUpAction(_previous: AuthFormState, formData: FormData)
     return { error: parsed.error.issues[0]?.message ?? "Check the form and try again.", message: null, email: textField(formData, "email") };
   }
 
-  if (isDevAuthEnabled()) {
+  if (isGuestAuthEnabled()) {
     await startDevSession("new");
     redirect("/welcome");
   }
@@ -99,7 +99,7 @@ export async function completeOnboardingAction(_previous: AuthFormState, formDat
   if (!user) redirect("/sign-in");
 
   // Dev sign-in has no Supabase account. The name is kept in a cookie.
-  if (isDevAuthEnabled()) {
+  if (isGuestAuthEnabled()) {
     await saveDevName(parsed.data.fullName);
     redirect("/");
   }
@@ -113,7 +113,7 @@ export async function completeOnboardingAction(_previous: AuthFormState, formDat
 }
 
 export async function signOutAction(): Promise<void> {
-  if (isDevAuthEnabled()) {
+  if (isGuestAuthEnabled()) {
     await endDevSession();
   } else {
     const supabase = await createSupabaseServerClient();

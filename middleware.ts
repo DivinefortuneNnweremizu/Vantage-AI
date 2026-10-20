@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { DEV_KNOWN_COOKIE, DEV_SESSION_COOKIE, parseDevSession } from "@/features/auth/dev-auth";
+import { DEV_KNOWN_COOKIE, DEV_SESSION_COOKIE, DEV_USER_COOKIE, isGuestAuthEnabled, isShowcaseMode, parseDevSession } from "@/features/auth/dev-auth";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
 interface CookieToSet {
@@ -19,10 +19,13 @@ function isPublicPath(pathname: string): boolean {
  * the public list. API routes still authenticate and authorize on their own.
  */
 export async function middleware(request: NextRequest): Promise<NextResponse> {
-  // Local development sign-in. Never true in production. See features/auth/dev-auth.ts.
-  if (process.env.NODE_ENV !== "production" && process.env.DEV_AUTH === "true") {
+  // Guest sign-in: local development, or showcase mode. See features/auth/dev-auth.ts.
+  if (isGuestAuthEnabled()) {
     const { pathname } = request.nextUrl;
-    const signedIn = parseDevSession(request.cookies.get(DEV_SESSION_COOKIE)?.value) !== null;
+    // In showcase mode a session without its own account cookie does not count, so nobody lands on a shared account.
+    const signedIn =
+      parseDevSession(request.cookies.get(DEV_SESSION_COOKIE)?.value) !== null &&
+      (!isShowcaseMode() || request.cookies.has(DEV_USER_COOKIE));
     // A browser that already has an account goes to Log in. A new visitor goes to Sign up, then onboarding.
     const entry = request.cookies.has(DEV_KNOWN_COOKIE) ? "/sign-in" : "/sign-up";
     const isAuthPage = pathname === "/sign-in" || pathname === "/sign-up";

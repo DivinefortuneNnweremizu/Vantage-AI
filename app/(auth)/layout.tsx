@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Sparkles } from "lucide-react";
 
 import { AuthShowcase } from "@/components/auth/auth-showcase";
+import { isShowcaseMode } from "@/features/auth/dev-auth";
 
 /**
  * Log in, Sign up, and onboarding. Like Linktree's sign-up: the form on the left, and on large screens
@@ -25,7 +26,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="w-full max-w-[420px]">{children}</div>
         </div>
 
-        <p className="text-xs text-fg-subtle">Only you can open your designs and reports.</p>
+        {isShowcaseMode() ? (
+          <p className="text-xs text-fg-subtle">
+            This is a showcase. Any email and password works, and your account lives only in this browser.
+          </p>
+        ) : (
+          <p className="text-xs text-fg-subtle">Only you can open your designs and reports.</p>
+        )}
       </main>
 
       <aside className="hidden lg:block">

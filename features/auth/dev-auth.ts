@@ -1,10 +1,11 @@
 /**
- * Local development sign-in.
+ * Sign-in without Supabase ("guest sign-in"). It is on in two situations:
  *
- * When DEV_AUTH=true and the app is NOT running in production, every request is treated as
- * a fixed demo user. This lets the product run end to end before Supabase is connected.
- *
- * It is impossible to enable in production: NODE_ENV=production always disables it.
+ * 1. Local development: DEV_AUTH=true and NODE_ENV is not production. Everyone is one fixed demo user.
+ *    This is impossible to enable in production: NODE_ENV=production always turns DEV_AUTH off.
+ * 2. Showcase mode: SHOWCASE_MODE=true. A deliberate, separate opt-in that works in production, for
+ *    showing the prototype without Supabase. Every browser gets its own private temporary account.
+ *    Any email and password works, so this is NOT real security. Never use it for real people's data.
  */
 export const DEV_USER = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -25,6 +26,8 @@ export const DEV_USER = {
 export const DEV_SESSION_COOKIE = "vantage-dev-session";
 export const DEV_NAME_COOKIE = "vantage-dev-name";
 export const DEV_KNOWN_COOKIE = "vantage-dev-known";
+/** Showcase mode only: the id of this browser's own temporary account. */
+export const DEV_USER_COOKIE = "vantage-dev-user";
 
 export type DevSessionKind = "existing" | "new";
 
@@ -44,6 +47,38 @@ export function parseDevSession(value: string | undefined): DevSessionKind | nul
   return null;
 }
 
-export function isDevAuthEnabled(): boolean {
-  return process.env.NODE_ENV !== "production" && process.env.DEV_AUTH === "true";
+/** True when the app is a showcase: fake sign-in with a separate temporary account per browser. */
+export function isShowcaseMode(): boolean {
+  return process.env.SHOWCASE_MODE === "true";
+}
+
+/** True when sign-in is the guest sign-in (local development, or showcase mode) instead of Supabase. */
+export function isGuestAuthEnabled(): boolean {
+  return isShowcaseMode() || (process.env.NODE_ENV !== "production" && process.env.DEV_AUTH === "true");
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isValidGuestId(value: string | undefined): value is string {
+  return value !== undefined && UUID.test(value);
+}
+
+interface GuestSession {
+  kind: DevSessionKind;
+  name: string | null;
+  /** The browser's own account id. Only set in showcase mode. */
+  userId: string | null;
+}
+
+/** Who a guest sign-in is. A fresh sign-up has no name until onboarding saves one. */
+export function guestIdentity(session: GuestSession): { id: string; email: string; fullName: string | null; avatarUrl: null } {
+  if (isShowcaseMode() && session.userId) {
+    return {
+      id: session.userId,
+      email: `guest-${session.userId.replaceAll("-", "").slice(0, 12)}@showcase.local`,
+      fullName: session.name || (session.kind === "new" ? null : "Guest"),
+      avatarUrl: null,
+    };
+  }
+  return { ...DEV_USER, fullName: session.name || (session.kind === "new" ? null : DEV_USER.fullName) };
 }

@@ -300,3 +300,11 @@ model AssistantMessage {
 
   @@index([sessionId, createdAt])
 }
+
+/// Uploaded images, when they are kept in the database (STORAGE_DRIVER=database, used for showcases).
+model StoredFile {
+  path        String   @id
+  contentType String
+  data        Bytes
+  createdAt   DateTime @default(now())
+}

@@ -314,6 +314,7 @@ Workflows are implementation recipes. Follow them exactly once they exist.
 | Analysis pipeline, scoring, Sentiment Map, recommendations, assistant | Built against the demo provider |
 | Iteration comparison | Built |
 | Real AI (Gemini, DeepSeek) | Built, unit-tested, and run end to end against a fake Gemini endpoint. **Not yet tried against a live service.** Needs `GEMINI_API_KEY` or `DEEPSEEK_API_KEY`. The demo provider stays labeled and is refused in production |
+| Showcase mode (no Supabase): per-browser guest accounts, images in the database | Built and tested against a production build. Not real security |
 | Supabase sign-in and storage | Written, **not yet tested** against a real project |
 | Website URL, Figma link, and PDF input | **Not built.** The composer says so when a link is pasted |
 | Plans, checkout, and limits | **Not built.** Entitlements are placeholders in `features/billing/plans.ts` |
@@ -467,6 +468,7 @@ The exact limits are not yet defined (see Open Questions). Until they are, build
 - Verify every payment webhook.
 - Restrict sessions and uploads to their owners.
 - Treat uploaded designs as confidential, including client work under NDA.
+- `SHOWCASE_MODE=true` is a deliberate opt-in that allows a fake sign-in in production, with a separate temporary account per browser. It is for showing the prototype, not for real people's data. `DEV_AUTH` still can never be enabled in production.
 
 See `.agents/rules/security.md`.
 
