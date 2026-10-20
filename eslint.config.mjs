@@ -32,7 +32,8 @@ const designSystemRules = {
 };
 
 const config = [
-  { ignores: [".next/**", ".next-*/**", "node_modules/**", "next-env.d.ts", "tokens/design-tokens.css"] },
+  // launch-video is a separate project (the launch film), with its own tooling.
+  { ignores: [".next/**", ".next-*/**", "node_modules/**", "next-env.d.ts", "tokens/design-tokens.css", "launch-video/**"] },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     // The token compiler is a plain Node CommonJS script.

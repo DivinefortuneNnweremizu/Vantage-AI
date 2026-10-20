@@ -1,0 +1,73 @@
+{
+  "fps": 30,
+  "bpm": 150,
+  "scenes": [
+    { "id": "hook", "seconds": 3.6 },
+    { "id": "logo", "seconds": 3.2 },
+    { "id": "upload", "seconds": 4.4 },
+    { "id": "analyze", "seconds": 3.6 },
+    { "id": "sentiment", "seconds": 5.6 },
+    { "id": "score", "seconds": 4.0 },
+    { "id": "fixes", "seconds": 4.8 },
+    { "id": "assistant", "seconds": 5.2 },
+    { "id": "iterate", "seconds": 3.6 },
+    { "id": "end", "seconds": 4.4 }
+  ],
+  "cues": [
+    { "scene": "hook", "id": "bubble1", "at": 0.2, "sfx": "pop" },
+    { "scene": "hook", "id": "bubble2", "at": 0.8, "sfx": "pop" },
+    { "scene": "hook", "id": "bubble3", "at": 1.4, "sfx": "pop" },
+    { "scene": "hook", "id": "riser", "at": 2.0, "sfx": "riser" },
+    { "scene": "hook", "id": "slam", "at": 2.4, "sfx": "slam" },
+
+    { "scene": "logo", "id": "impact", "at": 0.0, "sfx": "impact" },
+    { "scene": "logo", "id": "pin", "at": 0.4, "sfx": "pop" },
+    { "scene": "logo", "id": "sparkle", "at": 0.6, "sfx": "sparkle" },
+    { "scene": "logo", "id": "tagline", "at": 1.6, "sfx": "pop" },
+
+    { "scene": "upload", "id": "in", "at": 0.0, "sfx": "whoosh" },
+    { "scene": "upload", "id": "drop", "at": 1.2, "sfx": "thud" },
+    { "scene": "upload", "id": "pill1", "at": 2.2, "sfx": "pop" },
+    { "scene": "upload", "id": "pill2", "at": 2.8, "sfx": "pop" },
+    { "scene": "upload", "id": "send", "at": 3.6, "sfx": "click" },
+
+    { "scene": "analyze", "id": "in", "at": 0.0, "sfx": "whoosh" },
+    { "scene": "analyze", "id": "t1", "at": 0.6, "sfx": "tick" },
+    { "scene": "analyze", "id": "t2", "at": 1.0, "sfx": "tick" },
+    { "scene": "analyze", "id": "t3", "at": 1.4, "sfx": "tick" },
+    { "scene": "analyze", "id": "t4", "at": 1.8, "sfx": "tick" },
+    { "scene": "analyze", "id": "t5", "at": 2.2, "sfx": "tick" },
+    { "scene": "analyze", "id": "done", "at": 2.8, "sfx": "ding" },
+
+    { "scene": "sentiment", "id": "in", "at": 0.0, "sfx": "whoosh" },
+    { "scene": "sentiment", "id": "p1", "at": 1.0, "sfx": "pop" },
+    { "scene": "sentiment", "id": "p2", "at": 1.6, "sfx": "pop" },
+    { "scene": "sentiment", "id": "p3", "at": 2.2, "sfx": "pop" },
+    { "scene": "sentiment", "id": "p4", "at": 2.8, "sfx": "pop" },
+    { "scene": "sentiment", "id": "p5", "at": 3.4, "sfx": "pop" },
+
+    { "scene": "score", "id": "in", "at": 0.0, "sfx": "whoosh" },
+    { "scene": "score", "id": "sweep", "at": 0.6, "sfx": "sweep" },
+    { "scene": "score", "id": "done", "at": 2.4, "sfx": "ding" },
+
+    { "scene": "fixes", "id": "in", "at": 0.0, "sfx": "whoosh" },
+    { "scene": "fixes", "id": "r1", "at": 0.8, "sfx": "pop" },
+    { "scene": "fixes", "id": "r2", "at": 1.6, "sfx": "pop" },
+    { "scene": "fixes", "id": "r3", "at": 2.4, "sfx": "pop" },
+    { "scene": "fixes", "id": "glow", "at": 3.2, "sfx": "sparkle" },
+
+    { "scene": "assistant", "id": "in", "at": 0.0, "sfx": "whoosh" },
+    { "scene": "assistant", "id": "typing", "at": 0.6, "sfx": "typing" },
+    { "scene": "assistant", "id": "send", "at": 1.8, "sfx": "pop" },
+    { "scene": "assistant", "id": "reply", "at": 2.4, "sfx": "tick" },
+    { "scene": "assistant", "id": "image", "at": 3.8, "sfx": "pop" },
+
+    { "scene": "iterate", "id": "in", "at": 0.0, "sfx": "whoosh" },
+    { "scene": "iterate", "id": "climb", "at": 0.8, "sfx": "sweep" },
+    { "scene": "iterate", "id": "done", "at": 2.4, "sfx": "ding" },
+
+    { "scene": "end", "id": "impact", "at": 0.0, "sfx": "impact" },
+    { "scene": "end", "id": "sparkle", "at": 0.4, "sfx": "sparkle" },
+    { "scene": "end", "id": "cta", "at": 1.6, "sfx": "pop" }
+  ]
+}
