@@ -13,7 +13,7 @@ export const askAssistantSchema = z.object({
   question: z.string().trim().min(1, "Type a question first.").max(1000, "Use 1,000 characters or fewer."),
 });
 
-export interface AssistantMessageView {
+interface AssistantMessageView {
   id: string;
   role: "USER" | "ASSISTANT";
   content: string;

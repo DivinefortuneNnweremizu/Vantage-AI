@@ -4,7 +4,7 @@
  *
  * See .agents/rules/ai-behavior.md and architecture.md (AI Is a Service Layer).
  */
-export interface AnalyzeAsset {
+interface AnalyzeAsset {
   /** Zero-based position in the analyzed set. Findings refer to images by this index. */
   index: number;
   width: number;

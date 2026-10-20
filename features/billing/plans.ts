@@ -6,7 +6,7 @@ import type { Plan } from "@prisma/client";
  * The Free and VantagePro limits are NOT decided yet (see AGENTS.md, Open Questions).
  * `null` means "no limit for now". Change numbers here when the plans are set.
  */
-export interface Entitlements {
+interface Entitlements {
   /** Analysis runs per calendar month. */
   analysesPerMonth: number | null;
   /** Assistant replies per calendar month. */

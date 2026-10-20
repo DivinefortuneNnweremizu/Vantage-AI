@@ -19,13 +19,13 @@ const DIMENSIONS: ReadonlyArray<{ key: ScoreDimension; swatch: string; bar: stri
 function DeltaBadge({ delta, version }: { delta: number; version: number }) {
   if (delta === 0) {
     return (
-      <Badge size="sm" tone="neutral">
+      <Badge tone="neutral">
         No change since v{version}
       </Badge>
     );
   }
   return (
-    <Badge size="sm" tone={delta > 0 ? "success" : "error"}>
+    <Badge tone={delta > 0 ? "success" : "error"}>
       {delta > 0 ? "+" : "−"}
       {Math.abs(delta)} since v{version}
     </Badge>
@@ -98,7 +98,7 @@ export function UxScore({ report }: UxScoreProps) {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge size="sm" tone={score >= 70 ? "success" : score >= 50 ? "warning" : "error"}>
+                    <Badge tone={score >= 70 ? "success" : score >= 50 ? "warning" : "error"}>
                       {describeScore(score)}
                     </Badge>
                     {comparison ? <DeltaBadge delta={comparison.delta[key]} version={comparison.previousIteration} /> : null}

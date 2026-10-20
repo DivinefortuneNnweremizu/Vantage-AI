@@ -25,7 +25,7 @@ export interface ScorableFinding {
   principleId: string;
 }
 
-export interface ScoreContribution {
+interface ScoreContribution {
   findingId: string;
   /** Negative for problems, positive for strengths. Rounded to one decimal. */
   points: number;

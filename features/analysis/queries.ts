@@ -21,7 +21,7 @@ export interface ViewFinding {
   iterationStatus: "new" | "persisting" | null;
 }
 
-export interface ViewRecommendation {
+interface ViewRecommendation {
   id: string;
   rank: number;
   title: string;
@@ -38,7 +38,7 @@ export interface ViewAsset {
   height: number | null;
 }
 
-export interface ScoreSet {
+interface ScoreSet {
   overall: number;
   intuitive: number;
   trusted: number;

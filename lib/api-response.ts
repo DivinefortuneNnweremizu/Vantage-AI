@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-export interface ApiSuccess<T> {
+interface ApiSuccess<T> {
   success: true;
   data: T;
 }
 
-export interface ApiFailure {
+interface ApiFailure {
   success: false;
   error: {
     code: string;

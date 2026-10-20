@@ -7,9 +7,9 @@ interface IterationSummaryProps {
 }
 
 function Delta({ value }: { value: number }) {
-  if (value === 0) return <Badge size="sm" tone="neutral">No change</Badge>;
+  if (value === 0) return <Badge tone="neutral">No change</Badge>;
   return (
-    <Badge size="sm" tone={value > 0 ? "success" : "error"}>
+    <Badge tone={value > 0 ? "success" : "error"}>
       {value > 0 ? "+" : "−"}
       {Math.abs(value)}
     </Badge>

@@ -204,7 +204,7 @@ export function SentimentMap({ title, assets, findings }: SentimentMapProps) {
                   <div className="flex min-w-0 flex-col gap-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="cv01 text-lg font-semibold text-fg">{finding.title}</h3>
-                      <Badge size="sm" tone={SEVERITY_TONE[finding.severity]}>
+                      <Badge tone={SEVERITY_TONE[finding.severity]}>
                         {SEVERITY_LABEL[finding.severity]}
                       </Badge>
                     </div>

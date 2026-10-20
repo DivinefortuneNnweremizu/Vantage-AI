@@ -7,7 +7,7 @@
  *
  * Images already under the limit are sent untouched.
  */
-export const UPLOAD_TARGET_BYTES = Math.floor(3.5 * 1024 * 1024);
+const UPLOAD_TARGET_BYTES = Math.floor(3.5 * 1024 * 1024);
 const MAX_EDGE = 2400;
 
 /** Tried in order, from best quality to smallest. The first one that fits is used. */

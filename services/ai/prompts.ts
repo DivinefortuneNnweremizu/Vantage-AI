@@ -9,7 +9,7 @@ import type { AnalyzeInput, ChatInput } from "@/services/ai/provider";
  * text) is wrapped in markers and called data. It is never allowed to change these rules.
  */
 
-export type ContentPart = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
+type ContentPart = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";

@@ -38,7 +38,7 @@ function countRealAnalyses(userId?: string): Promise<number> {
 const REGION_MESSAGE = "Real AI analysis is not available in your region right now.";
 
 /** What to use when the real provider cannot be used: a demo report if allowed, otherwise a clear error. */
-export function demoFallbackOrThrow(message: string, code: ApiErrorCode = "RATE_LIMITED"): AiProvider {
+function demoFallbackOrThrow(message: string, code: ApiErrorCode = "RATE_LIMITED"): AiProvider {
   if (isDemoAllowed()) return getDemoProvider();
   throw new AppError(code, message);
 }

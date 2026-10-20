@@ -19,7 +19,7 @@ import {
  * Images can only be sent in user messages, so the instructions go in the system message and the
  * images go in the user message.
  */
-export interface OpenAiCompatibleConfig {
+interface OpenAiCompatibleConfig {
   /** Short id for logs, for example "deepseek". */
   id: string;
   /** Name used in messages, for example "DeepSeek". */

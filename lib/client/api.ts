@@ -64,7 +64,7 @@ export async function deleteRequest<T>(url: string): Promise<T> {
   return readApiResponse<T>(response);
 }
 
-export interface UploadedAsset {
+interface UploadedAsset {
   id: string;
   order: number;
   width: number | null;

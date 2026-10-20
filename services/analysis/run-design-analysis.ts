@@ -16,7 +16,7 @@ import { getStorage } from "@/services/storage";
 const STALE_AFTER_MS = 5 * 60 * 1000;
 const PROVIDER_TIMEOUT_MS = 120_000;
 
-export interface RunAnalysisParams {
+interface RunAnalysisParams {
   userId: string;
   sessionId: string;
   /** When provided, replaces the session goal. Pass an empty string to clear it. */
@@ -25,7 +25,7 @@ export interface RunAnalysisParams {
   country?: string | null;
 }
 
-export interface AnalysisOutcome {
+interface AnalysisOutcome {
   analysisId: string;
   iteration: number;
 }

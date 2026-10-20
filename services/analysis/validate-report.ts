@@ -1,7 +1,7 @@
 import { reportSchema, type RecommendationInput } from "@/features/analysis/schemas";
 import { getPrinciple, principleAppliesTo, type PrincipleCategory } from "@/services/ai/principles/library";
 
-export interface ValidatedFinding {
+interface ValidatedFinding {
   id: string;
   assetIndex: number;
   valence: "like" | "dislike";

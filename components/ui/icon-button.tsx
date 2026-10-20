@@ -17,7 +17,7 @@ const iconButtonVariants = cva(
   },
 );
 
-export interface IconButtonProps
+interface IconButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof iconButtonVariants> {
   /** Required. Icon-only buttons need an accessible name. */

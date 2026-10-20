@@ -10,7 +10,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { ACCEPT_ATTRIBUTE, checkFileBeforeUpload, deleteRequest, messageFor, uploadAsset } from "@/lib/client/api";
 import { cn } from "@/lib/cn";
 
-export interface UploadStepAsset {
+interface UploadStepAsset {
   id: string;
   name: string;
 }

@@ -173,7 +173,7 @@ async function removeStoredFiles(asset: Asset): Promise<void> {
     .catch(() => logger.warn("Could not delete stored files", { assetId: asset.id }));
 }
 
-export interface AssetFile {
+interface AssetFile {
   data: Buffer;
   mimeType: string;
 }

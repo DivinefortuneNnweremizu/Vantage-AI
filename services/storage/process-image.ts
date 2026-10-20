@@ -8,7 +8,7 @@ const MAX_INPUT_PIXELS = 50_000_000;
 const FULL_MAX_EDGE = 2400;
 const THUMB_MAX_EDGE = 640;
 
-export const ACCEPTED_TYPES_LABEL = "PNG, JPG, or WebP";
+const ACCEPTED_TYPES_LABEL = "PNG, JPG, or WebP";
 
 /** Identifies the real file type from its first bytes. The browser-reported type is never trusted. */
 export function sniffImageType(data: Buffer): "image/png" | "image/jpeg" | "image/webp" | null {
@@ -28,7 +28,7 @@ export function sniffImageType(data: Buffer): "image/png" | "image/jpeg" | "imag
   return null;
 }
 
-export interface ProcessedImage {
+interface ProcessedImage {
   full: Buffer;
   thumb: Buffer;
   width: number;

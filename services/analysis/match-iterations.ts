@@ -42,7 +42,7 @@ export function fromStoredFinding(finding: StoredFinding, assetOrder: ReadonlyMa
 
 export type CurrentStatus = "NEW" | "PERSISTING";
 
-export interface IterationDiff {
+interface IterationDiff {
   /** Status of each finding in the new report, keyed by finding id. */
   current: Map<string, CurrentStatus>;
   /** Findings from the previous report that no longer appear. Only problems count as resolved. */

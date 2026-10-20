@@ -18,7 +18,7 @@ export function LogoGlyph({ className, mono = false }: { className?: string; mon
  * The Vantage mark: a "V" (a vantage point) whose right arm ends in a pin, the same kind of marker the
  * Sentiment Map puts on a design. Colours come from tokens, so it follows the theme rules like everything else.
  */
-export function LogoMark({ className }: { className?: string }) {
+function LogoMark({ className }: { className?: string }) {
   return (
     <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-badge bg-night-950 text-white", className)}>
       <LogoGlyph className="size-[70%]" />

@@ -10,7 +10,7 @@ import type { ValidatedReport } from "@/services/analysis/validate-report";
 
 const PROMPT_VERSION = "1.0.0";
 
-export interface PersistReportParams {
+interface PersistReportParams {
   analysisId: string;
   sessionId: string;
   goal: string | null;

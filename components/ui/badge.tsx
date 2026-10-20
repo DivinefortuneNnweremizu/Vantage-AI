@@ -2,11 +2,8 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/cn";
 
-const badgeVariants = cva("inline-flex items-center justify-center gap-0.5 font-medium whitespace-nowrap", {
+const badgeVariants = cva("inline-flex items-center justify-center gap-0.5 rounded-badge px-1 text-xs font-medium whitespace-nowrap", {
   variants: {
-    size: {
-      sm: "rounded-badge px-1 text-xs",
-    },
     tone: {
       success: "bg-success-bg text-success-fg",
       warning: "bg-warning-bg text-warning-fg",
@@ -15,11 +12,11 @@ const badgeVariants = cva("inline-flex items-center justify-center gap-0.5 font-
       neutral: "bg-subtle text-fg-heading",
     },
   },
-  defaultVariants: { size: "sm", tone: "neutral" },
+  defaultVariants: { tone: "neutral" },
 });
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {}
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {}
 
-export function Badge({ className, size, tone, ...props }: BadgeProps) {
-  return <span className={cn(badgeVariants({ size, tone }), className)} {...props} />;
+export function Badge({ className, tone, ...props }: BadgeProps) {
+  return <span className={cn(badgeVariants({ tone }), className)} {...props} />;
 }
