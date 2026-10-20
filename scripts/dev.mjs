@@ -135,6 +135,7 @@ process.stdout.write("Starting the app...\n\n");
 app = spawn(process.execPath, [require.resolve("next/dist/bin/next"), "dev", ...process.argv.slice(2)], {
   stdio: "inherit",
   // A new id each start makes earlier dev sessions invalid, so the app starts at Sign up or Log in.
-  env: { ...process.env, DEV_BOOT_ID: randomUUID() },
+  // Local testing shares one demo account, so its images pile up. The stored-image limit is for shared hosting.
+  env: { MAX_STORED_IMAGES: "100000", ...process.env, DEV_BOOT_ID: randomUUID() },
 });
 app.once("exit", (code) => void stop(code ?? 0));

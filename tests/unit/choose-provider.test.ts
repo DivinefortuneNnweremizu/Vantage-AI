@@ -6,7 +6,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
  */
 const count = vi.fn();
 
-vi.mock("@/lib/prisma", () => ({ prisma: { analysis: { count } } }));
+const questions = vi.fn();
+
+vi.mock("@/lib/prisma", () => ({ prisma: { analysis: { count }, assistantMessage: { count: questions } } }));
 vi.mock("@/lib/logger", () => ({ logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
 
 /** Answers the per-person count and the whole-site count. */
@@ -25,6 +27,8 @@ beforeEach(() => {
   vi.stubEnv("GEMINI_API_KEY", "key");
   vi.stubEnv("REAL_AI_PER_USER_PER_DAY", "");
   vi.stubEnv("REAL_AI_PER_DAY", "");
+  vi.stubEnv("REAL_AI_CHAT_PER_USER_PER_DAY", "");
+  vi.stubEnv("REAL_AI_CHAT_PER_DAY", "");
   vi.stubEnv("ALLOW_DEMO_AI", "");
   vi.stubEnv("REAL_AI_BLOCKED_COUNTRIES", "");
 });
@@ -32,6 +36,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllEnvs();
   count.mockReset();
+  questions.mockReset();
 });
 
 describe("chooseProvider", () => {
@@ -145,26 +150,59 @@ describe("regions where real AI is off", () => {
   });
 });
 
+/** Answers the per-person count and the whole-site count of assistant questions. */
+function asked(mine: number, everyone: number): void {
+  questions.mockImplementation(async (args: { where: { session?: unknown } }) => (args.where.session ? mine : everyone));
+}
+
 describe("chooseChatProvider", () => {
+  beforeEach(() => asked(0, 0));
+
   it("uses the real assistant for a real report from an allowed region", async () => {
     const { chooseChatProvider } = await load();
-    expect(chooseChatProvider("NG", false).id).toBe("gemini");
-    expect(chooseChatProvider(null, false).id).toBe("gemini");
+    expect((await chooseChatProvider("u1", "NG", false)).id).toBe("gemini");
+    expect((await chooseChatProvider("u1", null, false)).id).toBe("gemini");
   });
 
   it("uses the demo assistant for a demo report, so sample content is never sent to the provider", async () => {
     const { chooseChatProvider } = await load();
-    expect(chooseChatProvider("NG", true).isDemo).toBe(true);
+    expect((await chooseChatProvider("u1", "NG", true)).isDemo).toBe(true);
   });
 
   it("uses the demo assistant for visitors from regions where real AI is off", async () => {
     const { chooseChatProvider } = await load();
-    expect(chooseChatProvider("DE", false).isDemo).toBe(true);
+    expect((await chooseChatProvider("u1", "DE", false)).isDemo).toBe(true);
   });
 
   it("refuses in production, for those regions, when demo reports are not allowed", async () => {
     vi.stubEnv("NODE_ENV", "production");
     const { chooseChatProvider } = await load();
-    expect(() => chooseChatProvider("DE", false)).toThrow("not available in your region");
+    await expect(chooseChatProvider("u1", "DE", false)).rejects.toThrow("not available in your region");
+  });
+
+  it("switches to the demo assistant once a person has asked their daily questions", async () => {
+    asked(30, 100);
+    const { chooseChatProvider } = await load();
+    expect((await chooseChatProvider("u1", "NG", false)).isDemo).toBe(true);
+  });
+
+  it("switches to the demo assistant once the whole site has used its daily questions", async () => {
+    asked(1, 300);
+    const { chooseChatProvider } = await load();
+    expect((await chooseChatProvider("u1", "NG", false)).isDemo).toBe(true);
+  });
+
+  it("says to come back tomorrow, in production, when the cap is reached and demos are not allowed", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    asked(30, 100);
+    const { chooseChatProvider } = await load();
+    await expect(chooseChatProvider("u1", "NG", false)).rejects.toThrow("Come back tomorrow");
+  });
+
+  it("lets the caps be changed with environment variables", async () => {
+    vi.stubEnv("REAL_AI_CHAT_PER_USER_PER_DAY", "2");
+    asked(2, 2);
+    const { chooseChatProvider } = await load();
+    expect((await chooseChatProvider("u1", "NG", false)).isDemo).toBe(true);
   });
 });

@@ -83,10 +83,11 @@ describe("validateReport", () => {
     expect(error.issues.join(" ")).toContain("unknown principle");
   });
 
-  it("rejects a marker outside the image", () => {
-    expectInvalid((report) => {
-      report.findings[0]!.marker = { x: 1.4, y: 0.5 };
-    });
+  it("drops a marker outside the image instead of failing the report or guessing where it meant", () => {
+    const report = validReport();
+    report.findings[0]!.marker = { x: 1.4, y: 0.5 };
+    const validated = validateReport(report, context);
+    expect(validated.findings[0]!.marker).toBeNull();
   });
 
   it("rejects a finding that points at a missing image", () => {

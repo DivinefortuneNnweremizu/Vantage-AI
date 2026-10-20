@@ -86,11 +86,12 @@ export async function streamAssistantReply(
   }
 
   const history = await listAssistantMessages(userId, sessionId);
-  await prisma.assistantMessage.create({
+  // Chosen before the question is saved: past the daily cap this may switch to the demo assistant, or refuse.
+  const provider = await chooseChatProvider(userId, country, report.analysis.isDemo);
+  const savedQuestion = await prisma.assistantMessage.create({
     data: { sessionId, analysisId: report.analysis.id, role: "USER", content: question },
+    select: { id: true },
   });
-
-  const provider = chooseChatProvider(country, report.analysis.isDemo);
   const chunks = provider.chat({
     report: toChatContext(report),
     history: history.slice(-CONTEXT_HISTORY).map((message) => ({ role: message.role, content: message.content })),
@@ -113,6 +114,8 @@ export async function streamAssistantReply(
         controller.close();
       } catch (error) {
         logger.error("Assistant reply failed", { sessionId, error: error instanceof Error ? error.message : "unknown" });
+        // Take the unanswered question back out, so asking again does not leave two questions in a row.
+        await prisma.assistantMessage.delete({ where: { id: savedQuestion.id } }).catch(() => undefined);
         controller.error(error);
       }
     },

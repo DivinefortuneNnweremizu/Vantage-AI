@@ -2,7 +2,7 @@ import "server-only";
 import { AppError } from "@/lib/app-error";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { STAGE_LABELS, type AnalysisEvent, type AnalysisProgressStage } from "@/features/analysis/schemas";
+import { ANALYSIS_STALE_AFTER_MS, STAGE_LABELS, type AnalysisEvent, type AnalysisProgressStage } from "@/features/analysis/schemas";
 import { getOwnedSession } from "@/features/sessions/service";
 import { AiProviderUnavailableError, ProviderQuotaError, type AiProvider, type AnalyzeInput } from "@/services/ai/provider";
 import { chooseProvider, demoFallbackOrNull } from "@/services/analysis/choose-provider";
@@ -12,9 +12,9 @@ import { computeScores } from "@/services/analysis/scoring/rubric";
 import { ReportValidationError, validateReport, type ValidatedReport } from "@/services/analysis/validate-report";
 import { getStorage } from "@/services/storage";
 
-/** An analysis that has run this long without finishing is treated as dead. */
-const STALE_AFTER_MS = 5 * 60 * 1000;
-const PROVIDER_TIMEOUT_MS = 120_000;
+// The analysis route is allowed 120 seconds. Each provider call gets less than half, so one retry still fits
+// and the run can fail cleanly (and be retried) instead of being cut off mid-way.
+const PROVIDER_TIMEOUT_MS = 55_000;
 
 interface RunAnalysisParams {
   userId: string;
@@ -72,7 +72,7 @@ async function loadPendingAssets(session: OwnedSession) {
     throw new AppError("CONFLICT", "This design has more than one page but is set to Single Page. Reload the page and try again.");
   }
 
-  const staleBefore = new Date(Date.now() - STALE_AFTER_MS);
+  const staleBefore = new Date(Date.now() - ANALYSIS_STALE_AFTER_MS);
   await prisma.analysis.updateMany({
     where: { sessionId: session.id, status: { in: ["QUEUED", "RUNNING"] }, createdAt: { lte: staleBefore } },
     data: { status: "FAILED", failureReason: "The analysis did not finish." },

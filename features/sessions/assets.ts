@@ -5,6 +5,7 @@ import type { Asset } from "@prisma/client";
 import { AppError } from "@/lib/app-error";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { ANALYSIS_STALE_AFTER_MS } from "@/features/analysis/schemas";
 import { entitlementsFor } from "@/features/billing/plans";
 import { DEFAULT_SESSION_TITLE, getOwnedSession, titleFromFileName } from "@/features/sessions/service";
 import { getStorage } from "@/services/storage";
@@ -19,7 +20,7 @@ const PENDING = { deletedAt: null, analyses: { none: { analysis: { status: "COMP
 /** Images cannot change while an analysis is reading them. */
 async function assertNoActiveAnalysis(sessionId: string): Promise<void> {
   const active = await prisma.analysis.findFirst({
-    where: { sessionId, status: { in: ["QUEUED", "RUNNING"] }, createdAt: { gt: new Date(Date.now() - 5 * 60 * 1000) } },
+    where: { sessionId, status: { in: ["QUEUED", "RUNNING"] }, createdAt: { gt: new Date(Date.now() - ANALYSIS_STALE_AFTER_MS) } },
     select: { id: true },
   });
   if (active) {
@@ -67,6 +68,10 @@ export async function addAsset(input: AddAssetInput): Promise<Asset> {
     }
     order = replaced.order;
   } else {
+    const stored = await prisma.asset.count({ where: { deletedAt: null, session: { userId: input.userId, deletedAt: null } } });
+    if (stored >= entitlements.maxStoredImages) {
+      throw new AppError("CONFLICT", `You have reached the limit of ${entitlements.maxStoredImages} stored images. Delete a design you no longer need to add more.`);
+    }
     if (pending.length >= entitlements.pagesPerJourney) {
       throw new AppError("CONFLICT", `A journey can have up to ${entitlements.pagesPerJourney} pages.`);
     }

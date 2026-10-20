@@ -1,4 +1,6 @@
 import "server-only";
+import { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 
 interface UserIdentity {
@@ -12,7 +14,7 @@ interface UserIdentity {
  * Creates the User row and a FREE Subscription on first sign-in.
  * Safe to call on every request: both writes are upserts inside one transaction.
  */
-export async function ensureUserRecords(identity: UserIdentity): Promise<void> {
+async function writeUserRecords(identity: UserIdentity): Promise<void> {
   await prisma.$transaction([
     prisma.user.upsert({
       where: { id: identity.id },
@@ -34,4 +36,18 @@ export async function ensureUserRecords(identity: UserIdentity): Promise<void> {
       update: {},
     }),
   ]);
+}
+
+export async function ensureUserRecords(identity: UserIdentity): Promise<void> {
+  try {
+    await writeUserRecords(identity);
+  } catch (error) {
+    // A brand-new user's first page makes several requests at once, and two can try to create the rows together.
+    // The loser fails on the unique key, but the rows exist now, so running it again is safe.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      await writeUserRecords(identity);
+      return;
+    }
+    throw error;
+  }
 }

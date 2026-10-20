@@ -89,7 +89,7 @@ For a demo link you do not need Supabase. Set `SHOWCASE_MODE=true` and give the 
 
 Showcase mode is a deliberate opt-in and works in production on purpose. It is not real security: anyone can "sign up" with a made-up email. Do not use it for real people's data. Real accounts need Supabase (see below).
 
-On Vercel, set `SHOWCASE_MODE=true`, `DATABASE_URL`, `DIRECT_URL`, `GEMINI_API_KEY`, `ALLOW_DEMO_AI=true`, and `NEXT_PUBLIC_APP_URL`. Create the tables once: in Supabase open **SQL Editor**, paste the whole of `docs/supabase-tables.sql`, and click **Run**. It puts the tables in a private `vantage` schema, and it is safe to run again. Then add `?schema=vantage` to the end of `DIRECT_URL`, and `&schema=vantage` to the end of `DATABASE_URL`. (With a database you can reach from your computer, `npx prisma migrate deploy` does the same.)
+On Vercel each request can open its own database connection, so add `&connection_limit=1` to `DATABASE_URL` (after `pgbouncer=true`) to avoid running out of connections. Also set `SHOWCASE_MODE=true`, `DATABASE_URL`, `DIRECT_URL`, `GEMINI_API_KEY`, `ALLOW_DEMO_AI=true`, and `NEXT_PUBLIC_APP_URL`. Create the tables once: in Supabase open **SQL Editor**, paste the whole of `docs/supabase-tables.sql`, and click **Run**. It puts the tables in a private `vantage` schema, and it is safe to run again. Then add `?schema=vantage` to the end of `DIRECT_URL`, and `&schema=vantage` to the end of `DATABASE_URL`. (With a database you can reach from your computer, `npx prisma migrate deploy` does the same.)
 
 ## Testing a production build
 

@@ -15,6 +15,8 @@ interface Entitlements {
   journeyAnalysis: boolean;
   /** Maximum pages in one journey. */
   pagesPerJourney: number;
+  /** Images one person can keep across all their designs. Protects shared storage. */
+  maxStoredImages: number;
 }
 
 const PLAN_ENTITLEMENTS: Record<Plan, Entitlements> = {
@@ -23,15 +25,20 @@ const PLAN_ENTITLEMENTS: Record<Plan, Entitlements> = {
     assistantMessagesPerMonth: null,
     journeyAnalysis: true,
     pagesPerJourney: 10,
+    maxStoredImages: 50,
   },
   VANTAGE_PRO: {
     analysesPerMonth: null,
     assistantMessagesPerMonth: null,
     journeyAnalysis: true,
     pagesPerJourney: 10,
+    maxStoredImages: 500,
   },
 };
 
 export function entitlementsFor(plan: Plan): Entitlements {
-  return PLAN_ENTITLEMENTS[plan];
+  const entitlements = PLAN_ENTITLEMENTS[plan];
+  // MAX_STORED_IMAGES overrides the stored-image limit, for example on a host with plenty of storage.
+  const override = Number.parseInt(process.env.MAX_STORED_IMAGES ?? "", 10);
+  return Number.isFinite(override) && override > 0 ? { ...entitlements, maxStoredImages: override } : entitlements;
 }

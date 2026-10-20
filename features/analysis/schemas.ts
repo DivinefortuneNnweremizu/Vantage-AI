@@ -25,7 +25,8 @@ const findingSchema = z.object({
   observation: shortText(400),
   impact: shortText(300),
   confidence: z.enum(["high", "medium", "low"]),
-  marker: markerSchema.nullable(),
+  // A marker outside the image (say x of 1.2, or percentages) is dropped. Never guess where it meant.
+  marker: markerSchema.nullable().catch(null),
 });
 
 const recommendationSchema = z.object({
@@ -36,6 +37,9 @@ const recommendationSchema = z.object({
   principleId: shortText(60),
   findingIds: z.array(shortText(40)).min(1),
 });
+
+/** An analysis that has run this long without finishing is treated as dead, so it cannot block a retry. */
+export const ANALYSIS_STALE_AFTER_MS = 3 * 60 * 1000;
 
 export const reportSchema = z.object({
   strengths: z.array(shortText(500)).min(1).max(8),
