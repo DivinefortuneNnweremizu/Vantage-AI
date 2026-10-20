@@ -1,16 +1,27 @@
 import { cn } from "@/lib/cn";
 
 /**
+ * The bare Vantage glyph, sized by the caller's class (for example "size-4"). It replaces the generic sparkle icon
+ * wherever the product points at itself: the assistant, upgrade buttons, and so on. It takes the surrounding text
+ * colour; the pin is the project blue, or the same colour as the text with `mono` (for coloured backgrounds).
+ */
+export function LogoGlyph({ className, mono = false }: { className?: string; mono?: boolean }) {
+  return (
+    <svg viewBox="6 5 30 30" className={className} fill="none" aria-hidden="true">
+      <path d="M11 13.5 20 29.5 27.5 16" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="29" cy="12" r="4.5" className={mono ? "fill-current" : "fill-primary-300"} />
+    </svg>
+  );
+}
+
+/**
  * The Vantage mark: a "V" (a vantage point) whose right arm ends in a pin, the same kind of marker the
  * Sentiment Map puts on a design. Colours come from tokens, so it follows the theme rules like everything else.
  */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-badge bg-night-950 text-white", className)}>
-      <svg viewBox="0 0 40 40" className="size-full" fill="none" aria-hidden="true">
-        <path d="M11 13.5 20 29.5 27.5 16" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="29" cy="12" r="4.5" className="fill-primary-300" />
-      </svg>
+      <LogoGlyph className="size-[70%]" />
     </span>
   );
 }

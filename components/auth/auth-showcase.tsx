@@ -1,4 +1,6 @@
-import { Check, Frown, Smile, Sparkles } from "lucide-react";
+import { Check, Frown, Smile } from "lucide-react";
+
+import { LogoGlyph } from "@/components/brand/logo";
 
 import { cn } from "@/lib/cn";
 
@@ -53,7 +55,7 @@ export function AuthShowcase() {
 
       <div className="relative flex flex-col gap-5">
         <span className="inline-flex w-fit items-center gap-2 rounded-full border border-night-700 bg-night-900/60 px-3 py-1.5 text-sm text-night-300 backdrop-blur">
-          <Sparkles className="size-4 text-primary-300" aria-hidden="true" />
+          <LogoGlyph className="size-4 text-white" />
           Design critique, on demand
         </span>
         <h2 className="cv01 max-w-[18ch] text-4xl leading-tight font-semibold xl:text-5xl">Know exactly what to fix in your design.</h2>

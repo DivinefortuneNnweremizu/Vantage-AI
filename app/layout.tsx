@@ -8,12 +8,22 @@ import "./globals.css";
 
 import { THEME_COOKIE, parseTheme } from "@/features/settings/theme";
 
+// Link previews need absolute image addresses, so they are built from the public address of the site.
+const siteUrl =
+  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000");
+
+const DESCRIPTION = "Principle-based design critique on demand. Know exactly what to fix in your design.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Vantage AI",
     template: "%s | Vantage AI",
   },
-  description: "Principle-based design critique on demand.",
+  description: DESCRIPTION,
+  openGraph: { siteName: "Vantage AI", title: "Vantage AI", description: DESCRIPTION, type: "website" },
+  twitter: { card: "summary_large_image", title: "Vantage AI", description: DESCRIPTION },
 };
 
 export const viewport: Viewport = {

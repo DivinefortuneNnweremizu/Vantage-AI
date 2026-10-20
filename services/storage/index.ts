@@ -1,3 +1,4 @@
+import "server-only";
 import { isShowcaseMode } from "@/features/auth/dev-auth";
 import { DatabaseStorageDriver } from "@/services/storage/database-driver";
 import { LocalStorageDriver } from "@/services/storage/local-driver";

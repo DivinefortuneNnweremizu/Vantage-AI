@@ -1,3 +1,4 @@
+import "server-only";
 import { getPrinciple, principleAppliesTo } from "@/services/ai/principles/library";
 import type { AiProvider, AnalyzeInput, ChatInput } from "@/services/ai/provider";
 import type { ReportInput } from "@/features/analysis/schemas";

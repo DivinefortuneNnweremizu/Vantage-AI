@@ -1,3 +1,4 @@
+import "server-only";
 import { AppError } from "@/lib/app-error";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";

@@ -1,3 +1,4 @@
+import "server-only";
 import type { DesignSession } from "@prisma/client";
 
 import { AppError } from "@/lib/app-error";

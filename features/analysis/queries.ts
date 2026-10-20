@@ -1,3 +1,4 @@
+import "server-only";
 import { prisma } from "@/lib/prisma";
 import { getOwnedSession } from "@/features/sessions/service";
 import { diffIterations, fromStoredFinding, markerOf } from "@/services/analysis/match-iterations";

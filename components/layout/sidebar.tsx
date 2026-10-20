@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Logo } from "@/components/brand/logo";
-import { Palette, Radar, Sparkles, X } from "lucide-react";
+import { Logo, LogoGlyph } from "@/components/brand/logo";
+import { Palette, Radar, X } from "lucide-react";
 
 import type { CurrentUser } from "@/features/auth/get-current-user";
 import type { SessionListItem } from "@/features/sessions/queries";
@@ -120,7 +120,7 @@ export function Sidebar({ user, recentSessions, onNavigate, onClose }: SidebarPr
       <div className="flex flex-col gap-2.5">
         <div className="px-4">
           <Link href="/settings/billing" onClick={onNavigate} className={cn(buttonVariants({ variant: "secondary" }), "w-full justify-start bg-black text-white hover:bg-night-900")}>
-            <Sparkles className="size-4" aria-hidden="true" />
+            <LogoGlyph className="size-4" />
             Upgrade to VantagePro
           </Link>
         </div>

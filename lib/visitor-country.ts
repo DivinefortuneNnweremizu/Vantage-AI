@@ -1,3 +1,4 @@
+import "server-only";
 /**
  * The visitor's country, as a two-letter ISO code, or null when it is not known.
  *

@@ -1,3 +1,4 @@
+import "server-only";
 interface Bucket {
   count: number;
   resetAt: number;

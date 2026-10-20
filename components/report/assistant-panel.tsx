@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronRight, Send, Sparkles } from "lucide-react";
+import { ChevronRight, Send } from "lucide-react";
 
+import { LogoGlyph } from "@/components/brand/logo";
 import { AssistantText, type DesignSpot } from "@/components/report/assistant-text";
 import { IconButton } from "@/components/ui/icon-button";
 import { ApiRequestError, readApiResponse } from "@/lib/client/api";
@@ -103,7 +104,7 @@ export function AssistantPanel({ sessionId, initialMessages, suggestedPrompts, s
     <section aria-label="Assistant" className="flex h-[min(82dvh,960px)] min-h-[560px] flex-col rounded-xl border border-line bg-surface">
       <header className="flex items-center gap-3 border-b border-line px-6 pt-6 pb-4">
         <span className="flex size-10 items-center justify-center rounded-badge bg-subtle text-fg-heading">
-          <Sparkles className="size-5" aria-hidden="true" />
+          <LogoGlyph className="size-5" />
         </span>
         <span className="cv01 text-base font-semibold text-fg-heading">Assistant</span>
       </header>

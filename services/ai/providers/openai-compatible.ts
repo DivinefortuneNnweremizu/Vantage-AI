@@ -1,3 +1,4 @@
+import "server-only";
 import { extractJson } from "@/services/ai/extract-json";
 import { analysisMessages, chatMessages, type ChatMessage } from "@/services/ai/prompts";
 import {

@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Logo } from "@/components/brand/logo";
-import { Menu, Sparkles } from "lucide-react";
+import { Logo, LogoGlyph } from "@/components/brand/logo";
+import { Menu } from "lucide-react";
 
 import type { CurrentUser } from "@/features/auth/get-current-user";
 import type { ThemePreference } from "@/features/settings/theme";
@@ -106,7 +106,7 @@ export function AppShell({ user, recentSessions, initialTheme, children }: AppSh
           <span className="hidden lg:block" />
           <div className="flex shrink-0 items-center gap-3">
             <Link href="/settings/billing" className={cn(buttonVariants({ variant: "secondary" }), "hidden sm:inline-flex")}>
-              <Sparkles className="size-4" aria-hidden="true" />
+              <LogoGlyph className="size-4" />
               Upgrade to VantagePro
             </Link>
             <ThemeToggle initialTheme={initialTheme} />

@@ -8,7 +8,8 @@ interface CookieToSet {
   options: CookieOptions;
 }
 
-const PUBLIC_PATHS = ["/sign-in", "/sign-up", "/auth/callback", "/api/health"];
+// The share-preview images must load for link previews (chat apps, social sites), which are not signed in.
+const PUBLIC_PATHS = ["/sign-in", "/sign-up", "/auth/callback", "/api/health", "/opengraph-image", "/twitter-image"];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));

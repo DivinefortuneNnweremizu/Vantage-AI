@@ -1,3 +1,4 @@
+import "server-only";
 import { OpenAiCompatibleProvider } from "@/services/ai/providers/openai-compatible";
 
 /**

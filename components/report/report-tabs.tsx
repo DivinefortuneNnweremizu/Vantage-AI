@@ -3,8 +3,8 @@
 import { useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles } from "lucide-react";
 
+import { LogoGlyph } from "@/components/brand/logo";
 import { REPORT_TABS, tabHref, type ReportTabId } from "@/components/report/tabs";
 import { cn } from "@/lib/cn";
 
@@ -80,7 +80,7 @@ export function ReportTabs({ sessionId, active, iteration }: ReportTabsProps) {
                 : "text-fg-muted hover:bg-hover hover:text-fg",
             )}
           >
-            {tab.id === "assistant" ? <Sparkles className="size-5" aria-hidden="true" /> : null}
+            {tab.id === "assistant" ? <LogoGlyph mono className="size-5" /> : null}
             {tab.label}
           </Link>
         );

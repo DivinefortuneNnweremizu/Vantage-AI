@@ -1,3 +1,4 @@
+import "server-only";
 import { DeepSeekAiProvider } from "@/services/ai/providers/deepseek";
 import { GeminiAiProvider } from "@/services/ai/providers/gemini";
 import { MockAiProvider } from "@/services/ai/providers/mock";
