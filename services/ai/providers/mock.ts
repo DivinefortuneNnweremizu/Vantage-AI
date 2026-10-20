@@ -374,7 +374,12 @@ export function composeMockAnswer({ report, question }: ChatInput): string {
 
   if (/fix|improve|first|recommend|change|how|priorit/.test(q)) {
     const top = report.recommendations.slice(0, 3);
-    return `Start with these, in order of impact:\n\n${list(top.map((item) => `${item.title}. ${item.change} ${item.rationale}`))}`;
+    const opening = report.strengths[0] ? `${report.strengths[0]} That is a good base to build on.` : "This design has a good base to build on.";
+    const items = top.map((item, index) => {
+      const image = item.findingRefs[0] ? `\n[image: ${item.findingRefs[0]}]` : "";
+      return `${index + 1}. ${item.title}${image}\n${item.rationale}\n- ${item.change}`;
+    });
+    return `${opening}\n\nHere is what I would improve first.\n\n${items.join("\n\n")}\n\nStart with "${top[0]?.title ?? "the first change"}".`;
   }
 
   if (/strength|good|well|working|like/.test(q)) {

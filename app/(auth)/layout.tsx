@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 import { AuthShowcase } from "@/components/auth/auth-showcase";
 import { isShowcaseMode } from "@/features/auth/dev-auth";
@@ -16,10 +16,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           href="/"
           className="flex w-fit items-center gap-2.5 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
-          <span className="flex size-10 items-center justify-center rounded-badge bg-night-500 text-white">
-            <Sparkles className="size-5" aria-hidden="true" />
-          </span>
-          <span className="cv01 text-2xl font-semibold text-fg-strong">Vantage</span>
+          <Logo />
         </Link>
 
         <div className="flex flex-1 items-center justify-center py-12">

@@ -18,14 +18,22 @@ const report: ChatInput["report"] = {
 describe("assistant instructions", () => {
   const prompt = chatSystemPrompt(report);
 
-  it("asks for the fix, in short concrete steps, not just an explanation", () => {
+  it("asks for the fix as concrete changes, not just an explanation", () => {
     expect(prompt).toContain("Always say what to do");
     expect(prompt).toContain("darker shade");
-    expect(prompt).toContain("Do not stop at explaining the problem");
+    expect(prompt).toContain("Never stop at explaining the problem");
+  });
+
+  it("asks for a designer-style critique for broad questions, with close-ups of the design", () => {
+    expect(prompt).toContain("what already works");
+    expect(prompt).toContain("numbered improvements");
+    expect(prompt).toContain("[image: N]");
+    expect(prompt).toContain("Start with");
+    expect(prompt).toContain("Never cite a standard or law by name");
   });
 
   it("asks for everyday words and names the jargon to avoid", () => {
-    expect(prompt).toContain("everyday words");
+    expect(prompt).toContain("everyday design words");
     for (const term of ["WCAG", "success criterion", "contrast ratio"]) {
       expect(prompt).toContain(term);
     }
@@ -40,7 +48,7 @@ describe("assistant instructions", () => {
 
   it("still keeps the assistant to this report, in plain text", () => {
     expect(prompt).toContain("Answer only about this report");
-    expect(prompt).toContain("no Markdown symbols");
+    expect(prompt).toContain("no HTML and no Markdown symbols");
   });
 });
 

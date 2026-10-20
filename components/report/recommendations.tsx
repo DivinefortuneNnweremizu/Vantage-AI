@@ -1,18 +1,15 @@
 import { DesignPreview } from "@/components/report/design-preview";
-import { cn } from "@/lib/cn";
 import type { ReportView } from "@/features/analysis/queries";
 
 interface RecommendationsProps {
   report: ReportView;
-  /** "page" shows the design above the list. "card" is the compact version beside the assistant. */
-  variant: "page" | "card";
 }
 
-export function RecommendationList({ report, variant }: RecommendationsProps) {
+export function RecommendationList({ report }: RecommendationsProps) {
   const findingById = new Map(report.findings.map((finding) => [finding.id, finding]));
 
   return (
-    <ol className={cn("flex flex-col", variant === "page" ? "w-full" : "")}>
+    <ol className="flex w-full flex-col">
       {report.recommendations.map((recommendation) => {
         const standards = Array.from(
           new Set(
@@ -42,18 +39,7 @@ export function RecommendationList({ report, variant }: RecommendationsProps) {
   );
 }
 
-export function Recommendations({ report, variant }: RecommendationsProps) {
-  if (variant === "card") {
-    return (
-      <section aria-labelledby="recs-heading" className="flex flex-col gap-6 rounded-xl border border-line bg-surface p-6">
-        <h2 id="recs-heading" className="cv01 text-xl font-semibold text-fg">
-          Try these recommendations to make the experience better
-        </h2>
-        <RecommendationList report={report} variant="card" />
-      </section>
-    );
-  }
-
+export function Recommendations({ report }: RecommendationsProps) {
   return (
     <section aria-labelledby="recs-heading" className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
       {/* The design stays in view on the left while the recommendations scroll on the right. */}
@@ -67,7 +53,7 @@ export function Recommendations({ report, variant }: RecommendationsProps) {
         <h2 id="recs-heading" className="cv01 text-2xl font-semibold text-fg-strong">
           Try these recommendations to make the experience better
         </h2>
-        <RecommendationList report={report} variant="page" />
+        <RecommendationList report={report} />
       </div>
     </section>
   );

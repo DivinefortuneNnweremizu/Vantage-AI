@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronRight, Send, Sparkles } from "lucide-react";
 
+import { AssistantText, type DesignSpot } from "@/components/report/assistant-text";
 import { IconButton } from "@/components/ui/icon-button";
 import { ApiRequestError, readApiResponse } from "@/lib/client/api";
 import { cn } from "@/lib/cn";
@@ -17,6 +18,8 @@ interface AssistantPanelProps {
   sessionId: string;
   initialMessages: ChatMessage[];
   suggestedPrompts: string[];
+  /** Marked spots on the design, so an answer can show a close-up of the part it is about. */
+  spots: DesignSpot[];
 }
 
 const QUESTION_LIMIT = 1000;
@@ -63,7 +66,7 @@ function TypingDots() {
   );
 }
 
-export function AssistantPanel({ sessionId, initialMessages, suggestedPrompts }: AssistantPanelProps) {
+export function AssistantPanel({ sessionId, initialMessages, suggestedPrompts, spots }: AssistantPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState<null | { text: string }>(null);
@@ -97,7 +100,7 @@ export function AssistantPanel({ sessionId, initialMessages, suggestedPrompts }:
   }
 
   return (
-    <section aria-label="Assistant" className="flex h-[min(78vh,760px)] min-h-[520px] flex-col rounded-xl border border-line bg-surface">
+    <section aria-label="Assistant" className="flex h-[min(82dvh,960px)] min-h-[560px] flex-col rounded-xl border border-line bg-surface">
       <header className="flex items-center gap-3 border-b border-line px-6 pt-6 pb-4">
         <span className="flex size-10 items-center justify-center rounded-badge bg-subtle text-fg-heading">
           <Sparkles className="size-5" aria-hidden="true" />
@@ -120,19 +123,20 @@ export function AssistantPanel({ sessionId, initialMessages, suggestedPrompts }:
           <div
             key={message.id}
             className={cn(
-              "max-w-[85%] whitespace-pre-wrap rounded-xl px-4 py-3 text-sm leading-relaxed",
+              "rounded-xl px-4 py-3 text-sm leading-relaxed",
+              message.role === "USER" ? "max-w-[85%] whitespace-pre-wrap" : "max-w-3xl",
               message.role === "USER" ? "self-end border border-selected-line bg-selected text-on-selected" : "border border-line bg-subtle text-fg",
             )}
           >
             <span className="sr-only">{message.role === "USER" ? "You: " : "Assistant: "}</span>
-            {message.content}
+            {message.role === "USER" ? message.content : <AssistantText text={message.content} spots={spots} />}
           </div>
         ))}
 
         {pending ? (
           pending.text ? (
-            <div className="max-w-[85%] whitespace-pre-wrap rounded-xl border border-line bg-subtle px-4 py-3 text-sm leading-relaxed text-fg">
-              {pending.text}
+            <div className="max-w-3xl rounded-xl border border-line bg-subtle px-4 py-3 text-sm leading-relaxed text-fg">
+              <AssistantText text={pending.text} spots={spots} />
             </div>
           ) : (
             <TypingDots />

@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
@@ -5,7 +6,7 @@ import { AssistantPanel } from "@/components/report/assistant-panel";
 import { KeyTakeaways } from "@/components/report/key-takeaways";
 import { IterationSummary } from "@/components/report/iteration-summary";
 import { DemoNotice, Disclaimer } from "@/components/report/notices";
-import { Recommendations } from "@/components/report/recommendations";
+import { Recommendations, RecommendationList } from "@/components/report/recommendations";
 import { ReportHeader } from "@/components/report/report-header";
 import { PANEL_ID, ReportTabs } from "@/components/report/report-tabs";
 import { SentimentMap } from "@/components/report/sentiment-map";
@@ -58,6 +59,14 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
 
   if (!report.assets.length) notFound();
 
+  // Numbered the same way as the report the assistant reads (see toChatContext), so "[image: 3]" points at spot 3.
+  const assetById = new Map(report.assets.map((asset) => [asset.id, asset]));
+  const spots = report.findings.flatMap((finding, index) =>
+    finding.assetId && finding.marker
+      ? [{ ref: index + 1, assetId: finding.assetId, title: finding.title, x: finding.marker.x, y: finding.marker.y, width: assetById.get(finding.assetId)?.width ?? null, height: assetById.get(finding.assetId)?.height ?? null }]
+      : [],
+  );
+
   return (
     <div className="flex flex-col gap-4">
       <ReportHeader
@@ -82,14 +91,24 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
         {tab === "sentiment" ? (
           <SentimentMap title={`Analyzed design: ${report.session.title}`} assets={report.assets} findings={report.findings} />
         ) : null}
-        {tab === "recommendations" ? <Recommendations report={report} variant="page" /> : null}
+        {tab === "recommendations" ? <Recommendations report={report} /> : null}
         {tab === "assistant" ? (
-          <div className="grid gap-6 xl:grid-cols-2">
-            <Recommendations report={report} variant="card" />
+          <div className="flex flex-col gap-4">
+            {/* The chat gets the whole width so close-ups of the design are big enough to inspect. The recommendations fold away above it. */}
+            <details className="group rounded-xl border border-line bg-surface">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-6 py-4 text-base font-semibold text-fg-heading focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
+                Recommendations ({report.recommendations.length})
+                <ChevronDown className="size-5 text-fg-subtle transition-transform group-open:rotate-180" aria-hidden="true" />
+              </summary>
+              <div className="px-6 pb-4">
+                <RecommendationList report={report} />
+              </div>
+            </details>
             <AssistantPanel
               sessionId={session.id}
               initialMessages={messages.map((message) => ({ id: message.id, role: message.role, content: message.content }))}
               suggestedPrompts={report.suggestedPrompts}
+              spots={spots}
             />
           </div>
         ) : null}

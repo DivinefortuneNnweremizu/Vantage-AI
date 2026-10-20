@@ -43,7 +43,7 @@ const CHAT_TIMEOUT_MS = 60_000;
 const BUSY_RETRY_DELAY_MS = 3000;
 
 const DEFAULT_ANALYZE_MAX_TOKENS = 6000;
-const CHAT_MAX_TOKENS = 900;
+const CHAT_MAX_TOKENS = 2000;
 
 interface CompletionBody {
   messages: ChatMessage[];

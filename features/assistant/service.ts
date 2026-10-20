@@ -47,7 +47,8 @@ function toChatContext(report: ReportView): ChatReportContext {
     strengths: report.strengths,
     painPoints: report.painPoints,
     overallTakeaway: report.analysis.overallTakeaway,
-    findings: report.findings.map((finding) => ({
+    findings: report.findings.map((finding, index) => ({
+      ref: index + 1,
       title: finding.title,
       valence: finding.valence,
       severity: finding.severity,
@@ -61,6 +62,7 @@ function toChatContext(report: ReportView): ChatReportContext {
       title: item.title,
       change: item.change,
       rationale: item.rationale,
+      findingRefs: item.findingIds.map((id) => report.findings.findIndex((finding) => finding.id === id) + 1).filter((ref) => ref > 0),
     })),
   };
 }

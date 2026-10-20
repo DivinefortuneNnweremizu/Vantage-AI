@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Logo } from "@/components/brand/logo";
 import { Menu, Sparkles } from "lucide-react";
 
 import type { CurrentUser } from "@/features/auth/get-current-user";
@@ -99,7 +100,9 @@ export function AppShell({ user, recentSessions, initialTheme, children }: AppSh
           >
             <Menu className="size-5" aria-hidden="true" />
           </IconButton>
-          <span className="cv01 flex-1 truncate text-lg font-semibold text-fg-strong lg:hidden">Vantage</span>
+          <span className="flex-1 lg:hidden">
+            <Logo size="md" />
+          </span>
           <span className="hidden lg:block" />
           <div className="flex shrink-0 items-center gap-3">
             <Link href="/settings/billing" className={cn(buttonVariants({ variant: "secondary" }), "hidden sm:inline-flex")}>

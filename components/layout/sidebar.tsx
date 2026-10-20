@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Logo } from "@/components/brand/logo";
 import { Palette, Radar, Sparkles, X } from "lucide-react";
 
 import type { CurrentUser } from "@/features/auth/get-current-user";
@@ -57,10 +58,7 @@ export function Sidebar({ user, recentSessions, onNavigate, onClose }: SidebarPr
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between px-6 py-2">
           <Link href="/" onClick={onNavigate} className="flex items-center gap-2.5 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
-            <span className="flex size-10 items-center justify-center rounded-badge bg-night-500 text-white">
-              <Sparkles className="size-5" aria-hidden="true" />
-            </span>
-            <span className="cv01 text-2xl font-semibold text-fg-strong">Vantage</span>
+            <Logo />
           </Link>
           <IconButton tone="inline" aria-label="Close menu" onClick={onClose} className="lg:hidden">
             <X className="size-5" aria-hidden="true" />

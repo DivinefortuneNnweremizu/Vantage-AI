@@ -101,6 +101,7 @@ describe("demo assistant answers", () => {
       overallTakeaway: "Solid, with readability issues.",
       findings: [
         {
+          ref: 1,
           title: "Low text contrast",
           valence: "dislike",
           severity: "major",
@@ -111,7 +112,7 @@ describe("demo assistant answers", () => {
         },
       ],
       recommendations: [
-        { rank: 1, title: "Darken captions", change: "Use 4.5:1.", rationale: "WCAG 1.4.3." },
+        { rank: 1, title: "Darken captions", change: "Use 4.5:1.", rationale: "WCAG 1.4.3.", findingRefs: [1] },
       ],
     },
   };
@@ -130,8 +131,12 @@ describe("demo assistant answers", () => {
     expect(answer).toContain("68");
   });
 
-  it("lists recommendations in order when asked what to fix", () => {
-    expect(ask("What should I fix first?")).toContain("Darken captions");
+  it("lists recommendations in order when asked what to fix, with a close-up of the spot", () => {
+    const answer = ask("What should I fix first?");
+    expect(answer).toContain("1. Darken captions\n[image: 1]");
+    expect(answer).toContain("- Use 4.5:1.");
+    expect(answer).toContain("The heading is clear.");
+    expect(answer).toContain("Start with \"Darken captions\".");
   });
 
   it("falls back to the biggest pain points and invites a question", () => {

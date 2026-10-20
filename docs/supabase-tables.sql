@@ -1,4 +1,6 @@
-create schema if not exists vantage;
+-- Safe to run more than once: it clears the "vantage" schema first (only this app's tables live there).
+drop schema if exists vantage cascade;
+create schema vantage;
 set search_path to vantage;
 
 -- CreateSchema

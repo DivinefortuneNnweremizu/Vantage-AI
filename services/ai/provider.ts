@@ -34,6 +34,8 @@ export interface ChatReportContext {
   painPoints: string[];
   overallTakeaway: string;
   findings: Array<{
+    /** The finding's number in this report, starting at 1. The assistant uses it to point at a spot on the design. */
+    ref: number;
     title: string;
     valence: "like" | "dislike";
     severity: string;
@@ -42,7 +44,7 @@ export interface ChatReportContext {
     observation: string;
     impact: string;
   }>;
-  recommendations: Array<{ rank: number; title: string; change: string; rationale: string }>;
+  recommendations: Array<{ rank: number; title: string; change: string; rationale: string; findingRefs: number[] }>;
 }
 
 export interface ChatInput {

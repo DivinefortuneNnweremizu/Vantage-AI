@@ -120,7 +120,7 @@ test.describe("first analysis, start to finish", () => {
     await tabs.getByRole("tab", { name: "Assistant" }).click();
     await expect(page.getByText("How can I help you today?")).toBeVisible();
     await page.getByRole("button", { name: "What should I fix first?" }).click();
-    await expect(page.getByRole("log", { name: "Conversation" }).getByText("Start with these, in order of impact")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("log", { name: "Conversation" }).getByText("Here is what I would improve first.")).toBeVisible({ timeout: 30_000 });
     await page.getByLabel("Ask about your designs").fill("How is the score calculated?");
     await page.getByRole("button", { name: "Send question" }).click();
     await expect(page.getByRole("log", { name: "Conversation" }).getByText(/Each score starts at 100/)).toBeVisible({ timeout: 30_000 });
