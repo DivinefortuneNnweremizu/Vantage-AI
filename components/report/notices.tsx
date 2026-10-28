@@ -6,8 +6,11 @@ export function DemoNotice() {
     <div role="note" className="flex items-start gap-3 rounded-xl bg-warning-bg px-4 py-3 text-sm text-warning-fg">
       <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       <p>
-        <strong className="font-semibold">Demo report.</strong> These findings are sample content, not an analysis of your design. Real
-        AI analysis is limited each day and is not available in every region, so this one is a demo.
+        <strong className="font-semibold">Demo report.</strong>{" "}
+        {/* Shorter on smaller screens, so the notice stays on one or two lines and the report stays in view. */}
+        <span className="sm:hidden">Sample findings, not an analysis of your design.</span>
+        <span className="hidden sm:inline">These findings are sample content, not an analysis of your design.</span>
+        <span className="hidden lg:inline"> Real AI analysis is limited each day and is not available in every region.</span>
       </p>
     </div>
   );

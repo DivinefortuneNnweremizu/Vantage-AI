@@ -18,9 +18,11 @@ interface ReportHeaderProps {
   tab: ReportTabId;
   currentIteration: number;
   iterations: Array<{ iteration: number; overall: number }>;
+  /** Shown under the title: the score and what to fix first. */
+  summary?: React.ReactNode;
 }
 
-export function ReportHeader({ sessionId, title, tab, currentIteration, iterations }: ReportHeaderProps) {
+export function ReportHeader({ sessionId, title, tab, currentIteration, iterations, summary }: ReportHeaderProps) {
   const router = useRouter();
   const [isRenaming, setIsRenaming] = useState(false);
   const [draft, setDraft] = useState(title);
@@ -156,6 +158,8 @@ export function ReportHeader({ sessionId, title, tab, currentIteration, iteratio
           </IconButton>
         </div>
       </div>
+
+      {summary}
 
       {error ? (
         <p role="alert" className="text-sm text-error-fg">

@@ -231,7 +231,7 @@ export function UploadStep({ sessionId, pageScope, assets, maxPages, skipped }: 
         </ul>
 
         {selected ? (
-          <div className="relative min-w-0 flex-1 overflow-hidden rounded-2xl border border-line bg-subtle">
+          <div className="relative min-h-[280px] min-w-0 flex-1 overflow-hidden rounded-2xl border border-line bg-subtle">
             <AssetImage assetId={selected.id} alt={`Preview of ${selected.name}`} priority className="mx-auto max-h-[62vh] w-auto object-contain" />
             <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
               <Button

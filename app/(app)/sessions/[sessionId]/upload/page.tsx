@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { PageTitle } from "@/components/layout/page-title";
+import { FlowSteps } from "@/components/session/flow-steps";
 import { UploadStep } from "@/components/session/upload-step";
 import { requireCurrentUser } from "@/features/auth/get-current-user";
 import { entitlementsFor } from "@/features/billing/plans";
@@ -29,7 +30,8 @@ export default async function UploadPage({ params, searchParams }: UploadPagePro
   const skippedCount = Math.min(Math.max(Number.parseInt(skipped ?? "0", 10) || 0, 0), 50);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
+      <FlowSteps current={1} />
       <PageTitle
         title={isNewVersion ? "Upload a new version" : "Upload Images"}
         subtitle={

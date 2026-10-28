@@ -139,6 +139,57 @@ test.describe("first analysis, start to finish", () => {
     await expect(page).toHaveURL(/tab=recommendations/);
     await expect(page.getByRole("tab", { name: "Recommendations" })).toBeFocused();
   });
+
+  test("the summary chips lead to the findings they count", async ({ page }) => {
+    await page.goto("/library");
+    await page.getByRole("link", { name: /Flowboard landing/ }).first().click();
+    const summary = page.getByRole("list", { name: "Report summary" });
+    const findings = page.locator("li[id^='finding-']");
+
+    // A severity chip opens the Sentiment tab with only those findings.
+    await summary.getByRole("link", { name: /critical/ }).click();
+    await expect(page).toHaveURL(/focus=critical/);
+    await expect(page.getByText(/^Showing \d+ critical$/)).toBeVisible();
+    const critical = await findings.count();
+    expect(critical).toBeGreaterThan(0);
+    for (const finding of await findings.all()) await expect(finding).toContainText("Critical");
+
+    // "Show all" brings the rest of the problems back.
+    await page.getByRole("button", { name: "Show all" }).click();
+    await expect(page.getByText(/^Showing \d+ critical$/)).toHaveCount(0);
+    await expect.poll(() => findings.count()).toBeGreaterThan(critical);
+
+    // The strengths chip shows what works.
+    await summary.getByRole("link", { name: /strength/ }).click();
+    await expect(page).toHaveURL(/focus=strength/);
+    await expect(page.getByRole("heading", { name: "What works" })).toBeVisible();
+
+    // The score chip opens the UX Score tab, where it is broken down.
+    await summary.getByRole("link", { name: /Overall score/ }).click();
+    await expect(page).toHaveURL(/tab=score/);
+    await expect(page.getByRole("tab", { name: "UX Score" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  test("on a phone every report tab is visible at once, close to the title, and a click answers straight away", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/library");
+    await page.getByRole("link", { name: /Flowboard landing/ }).first().click();
+
+    const tabs = page.getByRole("tablist", { name: "Report sections" }).getByRole("tab");
+    await expect(tabs).toHaveCount(5);
+    // No tab hides behind sideways scrolling.
+    for (const tab of await tabs.all()) {
+      await expect(tab).toBeInViewport({ ratio: 1 });
+    }
+    // The bar sits right under the title row, not a screen's worth down the page.
+    const bar = await page.getByRole("tablist", { name: "Report sections" }).boundingBox();
+    expect(bar && bar.y).toBeLessThan(260);
+
+    // The clicked tab is highlighted at once, before its content has arrived.
+    await page.getByRole("tab", { name: "UX Score" }).click();
+    await expect(page.getByRole("tab", { name: "UX Score" })).toHaveAttribute("aria-selected", "true");
+    await expect(page).toHaveURL(/tab=score/);
+  });
 });
 
 test.describe("upload rules", () => {

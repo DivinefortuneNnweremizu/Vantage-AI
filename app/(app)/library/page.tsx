@@ -6,26 +6,9 @@ import { Avatar } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { requireCurrentUser } from "@/features/auth/get-current-user";
 import { listLibrarySessions } from "@/features/sessions/queries";
+import { formatRelative } from "@/lib/format-relative";
 
 export const metadata: Metadata = { title: "Design Library" };
-
-const relativeTime = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-
-function formatRelative(date: Date): string {
-  const seconds = Math.round((date.getTime() - Date.now()) / 1000);
-  const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
-    ["week", 604800],
-    ["day", 86400],
-    ["hour", 3600],
-    ["minute", 60],
-  ];
-  for (const [unit, size] of units) {
-    if (Math.abs(seconds) >= size) {
-      return relativeTime.format(Math.round(seconds / size), unit);
-    }
-  }
-  return "just now";
-}
 
 export default async function LibraryPage() {
   const user = await requireCurrentUser();
@@ -53,10 +36,20 @@ export default async function LibraryPage() {
                 href={`/sessions/${session.id}`}
                 className="group flex flex-col gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
               >
-                <div className="aspect-[16/10] overflow-hidden rounded-xl border border-line bg-subtle">
+                <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-line bg-subtle">
                   {session.coverAssetId ? (
                     <AssetImage assetId={session.coverAssetId} size="thumb" alt="" className="size-full object-cover object-top" />
                   ) : null}
+                  {/* The score and version on the card, so designs with the same name are easy to tell apart. */}
+                  <div className="absolute right-3 bottom-3 flex items-center gap-1.5">
+                    {session.version > 1 ? <span className="rounded-badge bg-night-950/85 px-2 py-1 text-xs font-semibold text-white">v{session.version}</span> : null}
+                    {session.score !== null ? (
+                      <span className="rounded-badge bg-night-950/85 px-2 py-1 text-xs font-semibold text-white">
+                        <span className="sr-only">Score </span>
+                        {session.score}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Avatar name={displayName} imageUrl={user.avatarUrl} className="mt-0.5 size-8" />

@@ -8,9 +8,11 @@ import { Palette, Radar, X } from "lucide-react";
 import type { CurrentUser } from "@/features/auth/get-current-user";
 import type { SessionListItem } from "@/features/sessions/queries";
 import { ProfileMenu } from "@/components/layout/profile-menu";
+import { AssetImage } from "@/components/ui/asset-image";
 import { IconButton } from "@/components/ui/icon-button";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { formatRelative } from "@/lib/format-relative";
 
 interface SidebarProps {
   user: CurrentUser;
@@ -102,12 +104,22 @@ export function Sidebar({ user, recentSessions, onNavigate, onClose }: SidebarPr
                       onClick={onNavigate}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "block truncate rounded-sm border px-4 py-2 text-sm transition-colors " +
+                        "flex items-center gap-3 rounded-sm border px-3 py-2 text-sm transition-colors " +
                           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
                         isActive ? sessionActive : navIdle,
                       )}
                     >
-                      {session.title}
+                      {/* A small picture and the time, so several designs with the same name are easy to tell apart. */}
+                      <span className="size-9 shrink-0 overflow-hidden rounded-md border border-line bg-subtle">
+                        {session.coverAssetId ? <AssetImage assetId={session.coverAssetId} size="thumb" alt="" className="size-full object-cover object-top" /> : null}
+                      </span>
+                      <span className="flex min-w-0 flex-col">
+                        <span className="truncate">{session.title}</span>
+                        {/* The time is worked out in the browser, so it can differ by a minute from the server render. */}
+                        <span suppressHydrationWarning className="truncate text-xs opacity-70">
+                          {formatRelative(session.updatedAt)}
+                        </span>
+                      </span>
                     </Link>
                   </li>
                 );

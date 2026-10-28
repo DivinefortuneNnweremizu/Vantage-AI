@@ -105,7 +105,7 @@ export function AppShell({ user, recentSessions, initialTheme, children }: AppSh
           </span>
           <span className="hidden lg:block" />
           <div className="flex shrink-0 items-center gap-3">
-            <Link href="/settings/billing" className={cn(buttonVariants({ variant: "secondary" }), "hidden sm:inline-flex")}>
+            <Link href="/settings/billing" className={cn(buttonVariants({ variant: "secondary" }), "hidden sm:inline-flex lg:hidden")}>
               <LogoGlyph className="size-4" />
               Upgrade to VantagePro
             </Link>

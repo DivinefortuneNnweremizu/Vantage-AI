@@ -8,9 +8,11 @@ import { IterationSummary } from "@/components/report/iteration-summary";
 import { DemoNotice, Disclaimer } from "@/components/report/notices";
 import { Recommendations, RecommendationList } from "@/components/report/recommendations";
 import { ReportHeader } from "@/components/report/report-header";
-import { PANEL_ID, ReportTabs } from "@/components/report/report-tabs";
+import { ReportSnapshot } from "@/components/report/report-snapshot";
+import { ReportTabs } from "@/components/report/report-tabs";
+import { ReportTabPanel, ReportTabsState } from "@/components/report/report-tabs-state";
 import { SentimentMap } from "@/components/report/sentiment-map";
-import { parseTab } from "@/components/report/tabs";
+import { parseFocus, parseTab } from "@/components/report/tabs";
 import { UxScore } from "@/components/report/ux-score";
 import { requireCurrentUser } from "@/features/auth/get-current-user";
 import { listAssistantMessages } from "@/features/assistant/service";
@@ -20,7 +22,7 @@ import { loadOwnedSessionOrNotFound } from "@/features/sessions/page-helpers";
 
 interface ReportPageProps {
   params: Promise<{ sessionId: string }>;
-  searchParams: Promise<{ tab?: string; v?: string }>;
+  searchParams: Promise<{ tab?: string; v?: string; focus?: string }>;
 }
 
 export async function generateMetadata({ params }: ReportPageProps): Promise<Metadata> {
@@ -52,6 +54,8 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
   }
 
   const tab = parseTab(query.tab);
+  // Set when a summary chip was clicked: show only that kind of finding (see ReportSnapshot).
+  const focus = tab === "sentiment" ? parseFocus(query.focus) : undefined;
   const isLatest = report.iterations[report.iterations.length - 1]?.iteration === report.analysis.iteration;
   const iterationParam = isLatest ? undefined : report.analysis.iteration;
 
@@ -67,52 +71,69 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
       : [],
   );
 
+  const countOf = (severity: string) => report.findings.filter((finding) => finding.severity === severity).length;
+  const topFix = report.recommendations[0];
+
   return (
     <div className="flex flex-col gap-4">
-      <ReportHeader
-        sessionId={session.id}
-        title={report.session.title}
-        tab={tab}
-        currentIteration={report.analysis.iteration}
-        iterations={report.iterations.map((entry) => ({ iteration: entry.iteration, overall: entry.overall }))}
-      />
-
-      {report.analysis.isDemo ? <DemoNotice /> : null}
-
-      <ReportTabs sessionId={session.id} active={tab} iteration={iterationParam} />
-
-      {report.comparison && (tab === "sentiment" || tab === "takeaways" || tab === "score") ? (
-        <IterationSummary comparison={report.comparison} iteration={report.analysis.iteration} />
-      ) : null}
-
-      <div role="tabpanel" id={PANEL_ID} aria-labelledby={`tab-${tab}`} tabIndex={0} className="pt-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
-        {tab === "takeaways" ? <KeyTakeaways report={report} /> : null}
-        {tab === "score" ? <UxScore report={report} /> : null}
-        {tab === "sentiment" ? (
-          <SentimentMap title={`Analyzed design: ${report.session.title}`} assets={report.assets} findings={report.findings} />
-        ) : null}
-        {tab === "recommendations" ? <Recommendations report={report} /> : null}
-        {tab === "assistant" ? (
-          <div className="flex flex-col gap-4">
-            {/* The chat gets the whole width so close-ups of the design are big enough to inspect. The recommendations fold away above it. */}
-            <details className="group rounded-xl border border-line bg-surface">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-6 py-4 text-base font-semibold text-fg-heading focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
-                Recommendations ({report.recommendations.length})
-                <ChevronDown className="size-5 text-fg-subtle transition-transform group-open:rotate-180" aria-hidden="true" />
-              </summary>
-              <div className="px-6 pb-4">
-                <RecommendationList report={report} />
-              </div>
-            </details>
-            <AssistantPanel
+      <ReportTabsState resetKey={`${tab}|${focus ?? ""}`}>
+        <ReportHeader
+          sessionId={session.id}
+          title={report.session.title}
+          tab={tab}
+          currentIteration={report.analysis.iteration}
+          iterations={report.iterations.map((entry) => ({ iteration: entry.iteration, overall: entry.overall }))}
+          summary={
+            <ReportSnapshot
               sessionId={session.id}
-              initialMessages={messages.map((message) => ({ id: message.id, role: message.role, content: message.content }))}
-              suggestedPrompts={report.suggestedPrompts}
-              spots={spots}
+              iteration={iterationParam}
+              active={tab}
+              focus={focus}
+              overall={report.analysis.scores.overall}
+              counts={{ critical: countOf("critical"), major: countOf("major"), minor: countOf("minor"), strengths: countOf("strength") }}
+              topFix={topFix?.title ?? null}
             />
-          </div>
+          }
+        />
+
+        {/* The tabs come straight after the title, so the content is on screen without scrolling. Notices sit below them. */}
+        <ReportTabs sessionId={session.id} active={tab} iteration={iterationParam} />
+
+        {report.analysis.isDemo ? <DemoNotice /> : null}
+
+        {report.comparison && (tab === "sentiment" || tab === "takeaways" || tab === "score") ? (
+          <IterationSummary comparison={report.comparison} iteration={report.analysis.iteration} />
         ) : null}
-      </div>
+
+        <ReportTabPanel active={tab}>
+          {tab === "takeaways" ? <KeyTakeaways report={report} /> : null}
+          {tab === "score" ? <UxScore report={report} /> : null}
+          {tab === "sentiment" ? (
+            <SentimentMap key={focus ?? "all"} title={`Analyzed design: ${report.session.title}`} assets={report.assets} findings={report.findings} focus={focus} />
+          ) : null}
+          {tab === "recommendations" ? <Recommendations report={report} /> : null}
+          {tab === "assistant" ? (
+            <div className="flex flex-col gap-4">
+              {/* The chat gets the whole width so close-ups of the design are big enough to inspect. The recommendations fold away above it. */}
+              <details className="group rounded-xl border border-line bg-surface">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-6 py-4 text-base font-semibold text-fg-heading focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
+                  Recommendations ({report.recommendations.length})
+                  <ChevronDown className="size-5 text-fg-subtle transition-transform group-open:rotate-180" aria-hidden="true" />
+                </summary>
+                <div className="px-6 pb-4">
+                  <RecommendationList report={report} />
+                </div>
+              </details>
+              <AssistantPanel
+                sessionId={session.id}
+                initialMessages={messages.map((message) => ({ id: message.id, role: message.role, content: message.content }))}
+                suggestedPrompts={report.suggestedPrompts}
+                spots={spots}
+              />
+            </div>
+          ) : null}
+        </ReportTabPanel>
+      </ReportTabsState>
 
       <Disclaimer />
     </div>

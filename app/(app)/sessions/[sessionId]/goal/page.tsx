@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { PageTitle } from "@/components/layout/page-title";
 import { GoalStep } from "@/components/session/goal-step";
 import { visitorCountry } from "@/lib/visitor-country";
 import { requireCurrentUser } from "@/features/auth/get-current-user";
@@ -28,16 +27,13 @@ export default async function GoalPage({ params }: GoalPageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <PageTitle title="My Goal" subtitle="Provide more information about what you want to learn and test" />
-      <GoalStep
-        sessionId={session.id}
-        coverAssetId={first.id}
-        coverName={first.originalName}
-        pageCount={assets.length}
-        initialGoal={session.goal ?? ""}
-        imagesGoToAi={sendsImagesToProvider(visitorCountry(await headers()))}
-      />
-    </div>
+    <GoalStep
+      sessionId={session.id}
+      coverAssetId={first.id}
+      coverName={first.originalName}
+      pageCount={assets.length}
+      initialGoal={session.goal ?? ""}
+      imagesGoToAi={sendsImagesToProvider(visitorCountry(await headers()))}
+    />
   );
 }

@@ -120,6 +120,23 @@ export function AssistantPanel({ sessionId, initialMessages, suggestedPrompts, s
       >
         <div className="w-fit max-w-[85%] rounded-xl border border-line bg-subtle px-4 py-3 text-sm text-fg">How can I help you today?</div>
 
+        {/* On an empty conversation the questions are right here, not tucked away at the bottom. */}
+        {messages.length === 0 && !pending && suggestedPrompts.length > 0 ? (
+          <div className="mt-1 flex flex-col gap-2">
+            <p className="text-sm text-fg-muted">Try asking</p>
+            {suggestedPrompts.slice(0, 4).map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => void ask(prompt)}
+                className="w-full max-w-xl rounded-xl border border-line bg-surface px-4 py-3 text-left text-sm text-fg-heading transition-colors hover:bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         {messages.map((message) => (
           <div
             key={message.id}
@@ -156,7 +173,7 @@ export function AssistantPanel({ sessionId, initialMessages, suggestedPrompts, s
       </p>
 
       <div className="flex flex-col gap-3 px-6 pb-6">
-        {suggestedPrompts.length > 0 ? (
+        {suggestedPrompts.length > 0 && (messages.length > 0 || pending) ? (
           <div className="relative">
             <div ref={chips} className="flex gap-3 overflow-x-auto pb-1">
               {suggestedPrompts.map((prompt) => (
