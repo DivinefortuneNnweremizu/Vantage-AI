@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
  */
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 
-export interface UsageLimits {
+interface UsageLimits {
   perUser: number;
   perDay: number;
 }
@@ -36,7 +36,7 @@ export function assistantLimits(): UsageLimits {
   };
 }
 
-export interface Usage {
+interface Usage {
   mine: number;
   everyone: number;
 }
